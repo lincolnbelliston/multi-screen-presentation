@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../jquery-2.1.4.min.js"></script>
+<script src="popup.js"></script>
+<script src="../bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href='../bootstrap-3.3.6-dist/css/bootstrap.css'>
+<link rel='stylesheet' href='popup.css'>
+
+</head>
+<body>
+	<div id='popup' class='container'>
+		<div class='row'>
+			<div class='col-xs-12'>
+				<div id='panel' class='panel panel-primary'>
+					<div class='panel-heading'>Select Profile</div>
+					<div class='panel-body'>
+						<select id='profiles' class='form-control'></select>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='col-xs-6'>
+				<button id='launch' class='btn btn-primary btn-block'>Launch</button>
+			</div>
+			<div class='col-xs-6'>
+				<button id='kill' class='btn btn-primary btn-block'>Close</button>
+			</div>
+		</div>
+		<div class='row'>
+			<div class='col-xs-12'>
+				<button id="go-to-options" class='btn btn-default btn-block'>Add/edit profile</button>
+			</div>
+		</div>
+	</div>
+</body>

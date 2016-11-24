@@ -1,0 +1,91 @@
+#container{
+}
+
+#settings{
+	margin-top: 15px;
+	height: 527px;
+}
+
+#edit-panel{
+	margin-top: 15px;
+}
+
+#new {
+	margin-bottom: 15px;
+}
+
+.left{
+	padding-right: 0px;
+}
+
+.right{
+	padding-left: 0px;
+}
+
+#ctl-panel{
+	margin-top: 15px;
+}
+
+input.ctl{
+	margin: 4px;
+	
+}
+
+#url-panel{
+	margin-bottom: 64px;
+}
+
+.url{
+	height: 34px;
+}
+
+#buttons{
+	position: fixed;
+	bottom: 0px;
+	background-color: white;
+	padding: 15px;
+}
+
+#grid-buttons{
+	padding-top: 15px;
+}
+
+#monGrid{
+	margin-left:auto;
+	margin-right:auto;
+}
+
+input[type='number'].grid{
+	width: 6em;
+}
+
+table{
+	border-collapse: separate;
+	border-spacing: 2px;
+}
+td {
+	border: 1px solid black;
+	height: 2em;
+	width: 2em;
+	text-align: center;
+	background-color: white;
+	border-radius: 3px;
+}
+
+td:hover{
+	box-shadow: 1px 1px 1px #888888;
+}
+
+td[bold=true]{
+	border: 3px solid black;
+}
+
+td[clicked=true]{
+	border: 3px solid blue;
+}
+
+#help{
+	position: absolute;
+	bottom: 0px;
+	right: 2px;
+}
