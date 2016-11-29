@@ -9,11 +9,13 @@
 	<script src="../bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href='../bootstrap-3.3.6-dist/css/bootstrap.css'>
 	<link rel='stylesheet' href='options.css'>
+	<link rel='stylesheet' href='keyboard/keyboard.css'>
+
 </head>
 
 <body>
 <div class='container'>
-	<div id='options'>
+	<div id='main-menu'>
 		<div class='row'>
 			<div class='col-xs-12'>
 				<div id='edit-panel' class='panel panel-default'>
@@ -26,17 +28,18 @@
 		</div>
 		<div class='row'>
 			<div class='col-xs-12'>
+				<button id='shortcut-button' class='btn btn-default pull-left'>Shortcuts</button>
 				<button id='new' class='btn btn-default pull-right'>New profile</button>
 			</div>
 		</div>
 	</div>
-	<div id='settings'>
+	<div id='profile-settings'>
 		<div class='row'>
 			<div class='col-xs-4 left'>
 				<h5>Profile name</h5>
 			</div>
 			<div class='col-xs-8 right'>
-				<input type='text' id='name' class='form-control right'>
+				<input type='text' id='name' class='form-control'>
 			</div>
 		</div>
 		<div class='row'>
@@ -44,7 +47,7 @@
 				<h5># of Monitors</h5>
 			</div>
 			<div class='col-xs-8 right'>
-				<input type="number" id='monNum' class='form-control right' value=1 min='1'>
+				<input type="number" id='monNum' class='form-control' value=1 min='1'>
 			</div>
 		</div>
 		<div class='row'>
@@ -64,8 +67,8 @@
 					</div>
 					<div class='panel-body' style='position:relative'>
 						<table id='monGrid'>
-							<tr>
-								<td data-row=0 data-col=0 clicked=false bold=false></td>
+							<tr class='monitor-grid-row'>
+								<td class='monitor-grid-element' data-row=0 data-col=0 clicked=false bold=false></td>
 							</tr>
 						</table>
 						<div id='grid-buttons' class='row'>
@@ -112,8 +115,81 @@
 			</div>
 		</div>
 	</div>
-</div>
+	<div id='shortcuts'>
+		<div id='close-all-shortcut' class='panel panel-default'>
+			<div class="row shortcut-row panel-body">
+				<div class="col-xs-4">
+					<h5><em>Close All</em></h5>
+				</div>
+				<div class="col-xs-4">
 
+				</div>
+				<div class="col-xs-4">
+					<button id='edit-close-all-shortcut' class='edit-shortcut-button btn btn-default pull-left'>
+						<span class='glyphicon glyphicon-pencil'></span>
+					</button>
+					<button id='delete-close-all-shortcut' class='delete-shortcut-button btn btn-default pull-right'>
+						<span class='glyphicon glyphicon-remove'></span>
+					</button>
+
+				</div>
+
+			</div>
+
+			<div>
+				<!-- This is where the keyboard will be loaded on button click -->
+			</div>
+		</div>
+		<div class='panel panel-default'>
+			<div  class="row shortcut-row panel-body">
+				<div class="col-xs-4">
+					<h5><em>Close Last</em></h5>
+				</div>
+				<div class="col-xs-4">
+
+				</div>
+				<div class="col-xs-4">
+					<button id='edit-close-last-shortcut' class='edit-shortcut-button btn btn-default pull-left'>
+						<span class='glyphicon glyphicon-pencil'></span>
+					</button>
+					<button id='delete-close-last-shortcut' class='delete-shortcut-button btn btn-default pull-right'>
+						<span class='glyphicon glyphicon-remove'></span>
+					</button>
+
+				</div>
+
+			</div>
+			<div>
+				<!-- This is where the keyboard will be loaded on button click -->
+			</div>
+			
+		</div>
+
+		<div class="row">
+			<div class='col-xs-6'></div>
+			<div class='col-xs-3'>
+				<button id='new-shortcut' class='btn btn-primary pull-right'>New</button>
+			</div>
+			<div class='col-xs-3'>
+				<button id='done' class='btn btn-default pull-right'>Done</button>
+			</div>
+		</div>
+</div>
+	
 
 </body>
 
+
+<template id="shortcut-template">
+	<div class="row">
+		<div class='col-xs-12'>
+			<div class='panel panel-default'>
+				<div class='panel-heading'>Shortcut</div>
+				<div class='panel-body'>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+</template>

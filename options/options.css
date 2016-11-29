@@ -1,9 +1,17 @@
 #container{
 }
 
-#settings{
+#profile-settings{
 	margin-top: 15px;
 	height: 527px;
+}
+
+#shortcuts{
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.shortcut-row{
 }
 
 #edit-panel{
@@ -18,9 +26,11 @@
 	padding-right: 0px;
 }
 
+
 .right{
 	padding-left: 0px;
 }
+
 
 #ctl-panel{
 	margin-top: 15px;
@@ -70,6 +80,8 @@ td {
 	text-align: center;
 	background-color: white;
 	border-radius: 3px;
+	cursor: default;
+
 }
 
 td:hover{

@@ -1,0 +1,48 @@
+#keyboard {
+	width: 370px
+	;
+}
+
+#tab-key {
+	width: 2.7em;
+}
+
+#caps-lock {
+	width: 3.3em;
+}
+
+#enter-key {
+	width: .7em;
+}
+
+#shift-key {
+	width: 4em;
+}
+
+#ctrl-key {
+	width: 2.7em;
+}
+
+#alt-key {
+	width: 2.7em;
+}
+
+#space-bar {
+	width: 12em;
+}
+
+.key-disabled {
+	border: 1px solid LightGray;
+}
+
+.key-disabled:hover{
+	box-shadow: none;
+}
+
+#edit-shortcut-controls{
+	margin: 5px;
+}
+
+span {
+	pointer-events: none;
+}
