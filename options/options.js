@@ -12,7 +12,7 @@ $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();   
 	options.populate();
 
-// set up listeners for page events 
+	// set up listeners for page events 
 	document.querySelector('#edit').addEventListener('change',function(profileName,isnew){
 		existing = $('select[id=edit]').val();
 		options.edit(existing,false)
@@ -33,9 +33,7 @@ $(document).ready(function(){
 	document.querySelector('#clear').addEventListener('click',options.clear);
 	document.querySelector('#back').addEventListener('click',options.back);
 	document.querySelector('#help').addEventListener('click',options.help);
-//	document.querySelector('#monGrid').addEventListener( "contextmenu", function(e) {
-//		console.log(e);
-//	});
+
 
 });
 
@@ -195,7 +193,6 @@ options.edit = function(profileName,isnew) {
 			});
 		});
 	};
-	console.log(options.alreadyClicked)
 }
 
 
@@ -217,15 +214,6 @@ options.urlField = function() {
 	options.m = monitors;
 }
 
-/* save settings by reading all the fields and saving them to an object in chrome's sync storgage:
-{settings:
-	{
-		profile1:{},
-		profile2:{},
-		profile3:{}		
-	}
-}
-*/
 options.curr_profile = {}
 options.save = function() {
 	if (options.alreadyClicked == false){
@@ -308,7 +296,7 @@ options.refresh = function() {
 	$('#col').val(1);
 	options.gridY();
 	options.gridX();
-//	$('td[data-row=0][data-col=0]').attr('clicked',true).attr('bold',false).html('')
+	//	$('td[data-row=0][data-col=0]').attr('clicked',true).attr('bold',false).html('')
 	$('td').attr('clicked',false).attr('bold',false).html('')
 	options.currMon = 1;
 	options.urlField();

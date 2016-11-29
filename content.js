@@ -11,7 +11,7 @@ content.handleKeyDown = function(e) {
 
  var evt = (e==null ? event:e);
 
- ctrlPressed =evt.ctrlKey;
+ ctrlPressed = evt.ctrlKey;
  shiftPressed = evt.shiftKey;
 
  if (ctrlPressed && shiftPressed && evt.keyCode==75) {

@@ -1,3 +1,8 @@
+var popup = {};
+popup.object = {};
+popup.ids = []
+popup.lastLaunch = [];
+
 $(document).ready(function(){
 	popup.populate();	
 	document.querySelector('#go-to-options').addEventListener('click',function() {
@@ -10,13 +15,19 @@ $(document).ready(function(){
 	  }
 	});
 	document.querySelector('#launch').addEventListener('click',popup.launch);
-	document.querySelector('#kill').addEventListener('click',popup.getIds);
+	document.querySelector('#kill').addEventListener('click', popup.getAllIds);
+
+	document.querySelector('#kill-last').addEventListener('click', popup.getLastIds);
+
+	chrome.storage.sync.get('kill',function(obj){
+		popup.ids = obj.kill;
+		if(obj.lastLaunch){
+			popup.lastLaunch = obj.lastLaunch;
+		}
+	});
 });
 
 
-var popup = {};
-popup.object = {};
-popup.ids = []
 
 // populate dropdown list with saved profiles
 popup.populate = function(){
@@ -33,13 +44,17 @@ popup.populate = function(){
 popup.launch = function(){
 	profileName = $('#profiles').val();
 	data = JSON.parse(popup.object[profileName]);
-	popup.ids=[];
+
+
+	popup.lastLaunch.push(parseInt(data.mon));
 	
 	var w = screen.width;
 	var h = screen.height;
 	
 	var left_0 = data.ctl[1];
 	var top_0 = data.ctl[0];
+
+	var windowsOpened = 0;
 	
 	$(data.loc).each(function(index,value){
 		url_string = data.url[index];
@@ -57,46 +72,89 @@ popup.launch = function(){
 		var y = Math.round(Number(h*(top_y - top_0)));
 		if(y == -0){y = 0}
 		
-		console.log(x,y)
 
 		chrome.windows.create({url: url_string,left:x,top:y,focused:false},
 			function(newWindow){
-				console.log(newWindow.id);
 				popup.ids.push(newWindow.id);
-				chrome.windows.update(newWindow.id,{state:"fullscreen"})
-				popup.storeIds();
+				chrome.windows.update(newWindow.id,{state:"fullscreen"});
+				windowsOpened ++;
+
+				if(windowsOpened == data.mon){
+					popup.storeIDs();
+				}
 			}
 		)
 	});
 	
 	
-	
-
-		
-
-	
 }
 
 // as windows are opened, save window ids to an array
-popup.storeIds = function() {
+popup.storeIDs = function(){
 	chrome.storage.sync.set(
-		{
-			'kill':popup.ids
-		});
-	};
+	{
+		'kill':popup.ids,
+		'lastLaunch':popup.lastLaunch
+	})
+	console.log(popup.ids);
+	console.log(popup.lastLaunch);
+}
 
 // on "Close" click, access array of saved windows ids
-popup.getIds = function(){
+popup.getLastIds = function(){
 	chrome.storage.sync.get('kill',function(obj){
 		popup.ids = obj.kill;
-		popup.kill()
+		chrome.storage.sync.get('lastLaunch',function(obj){
+			popup.lastLaunch = obj.lastLaunch;
+			popup.killLast();
+
+		})
+		
+	
 	});
 }
+
+popup.getAllIds = function(){
+	chrome.storage.sync.get('kill',function(obj){
+		popup.ids = obj.kill;
+		popup.kill();
+		
+		})
+	};
+	
+
 
 // iterate through window ids and close each one
 popup.kill = function(){
 	$.each(popup.ids, function(index,value){
-		chrome.windows.remove(value);
+		try {
+			chrome.windows.remove(value);
+		}
+		catch(err){
+			console.log('Window with id '+value+' already closed')
+		}
 	});	
+
+	popup.ids = [];
+	popup.lastLaunch = [];
+	popup.storeIDs();
+
 }
+
+popup.killLast = function(){
+	var k = popup.lastLaunch.pop();
+	var n = popup.ids.length;
+	for (var i = n-1; i >= n-k; i--){
+		chrome.windows.remove(popup.ids[i])
+		popup.ids.pop();
+
+		if(i == n-k){
+			popup.storeIDs();
+		}
+	}
+
+
+}
+
+
 

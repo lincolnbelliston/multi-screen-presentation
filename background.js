@@ -1,4 +1,4 @@
-// close windows on "ctrl-k" event
+// close windows on "ctrl-shift-k" event
 
 // listening for 'kill' event from content script
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
@@ -18,4 +18,9 @@ background.kill = function(){
 	$.each(ids, function(index,value){
 		chrome.windows.remove(value);
 	});
+
+	chrome.storage.sync.set(
+	{
+		'kill':[]
+	})
 }
