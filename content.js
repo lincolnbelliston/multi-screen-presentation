@@ -1,6 +1,5 @@
 // inject event listener into page
 $(document).ready(function(){
-	console.log('hello');
 	document.onkeydown = content.handleKeyDown;
 	document.onkeyup = content.handleKeyUp;
 

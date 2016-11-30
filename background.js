@@ -78,7 +78,6 @@ background.kill = function(){
 }
 
 background.killLast = function(){
-	console.log(background.lastLaunch);
 	var k = background.lastLaunch.pop();
 	var n = background.ids.length;
 

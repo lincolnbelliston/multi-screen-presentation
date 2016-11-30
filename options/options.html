@@ -53,7 +53,7 @@
 		<div class='row'>
 			<div class='col-xs-12'>
 				<div id='ctl-panel' class='panel panel-default'>
-					<div class='panel-heading'> 
+					<div class='panel-heading'>
 						<div class='row'>
 							<div class='col-xs-2 left'><h5 style='text-align:right'>Rows </h5></div>
 							<div class='col-xs-4'>
@@ -116,7 +116,7 @@
 		</div>
 	</div>
 	<div id='shortcuts'>
-		<div id='close-all-shortcut' class='panel panel-default'>
+		<div id='close-all-shortcut' data-shortcutName='closeAll' class='shortcut-panel panel panel-default'>
 			<div class="row shortcut-row panel-body">
 				<div class="col-xs-4">
 					<h5><em>Close All</em></h5>
@@ -128,7 +128,7 @@
 					<button id='edit-close-all-shortcut' class='edit-shortcut-button btn btn-default pull-left'>
 						<span class='glyphicon glyphicon-pencil'></span>
 					</button>
-					<button id='delete-close-all-shortcut' class='delete-shortcut-button btn btn-default pull-right'>
+					<button id='delete-close-all-shortcut' class='delete-shortcut-button btn btn-default pull-right' disabled='disabled'>
 						<span class='glyphicon glyphicon-remove'></span>
 					</button>
 
@@ -140,7 +140,7 @@
 				<!-- This is where the keyboard will be loaded on button click -->
 			</div>
 		</div>
-		<div class='panel panel-default'>
+		<div id='close-last-shortcut' data-shortcutName='closeLast' class='shortcut-panel panel panel-default'>
 			<div  class="row shortcut-row panel-body">
 				<div class="col-xs-4">
 					<h5><em>Close Last</em></h5>
@@ -152,7 +152,7 @@
 					<button id='edit-close-last-shortcut' class='edit-shortcut-button btn btn-default pull-left'>
 						<span class='glyphicon glyphicon-pencil'></span>
 					</button>
-					<button id='delete-close-last-shortcut' class='delete-shortcut-button btn btn-default pull-right'>
+					<button id='delete-close-last-shortcut' class='delete-shortcut-button btn btn-default pull-right' disabled='disabled'>
 						<span class='glyphicon glyphicon-remove'></span>
 					</button>
 
@@ -162,34 +162,19 @@
 			<div>
 				<!-- This is where the keyboard will be loaded on button click -->
 			</div>
-			
+
 		</div>
 
 		<div class="row">
 			<div class='col-xs-6'></div>
 			<div class='col-xs-3'>
-				<button id='new-shortcut' class='btn btn-primary pull-right'>New</button>
+				<button id='new-shortcut' class='btn btn-primary pull-right' disabled='disabled'>New</button>
 			</div>
 			<div class='col-xs-3'>
 				<button id='done' class='btn btn-default pull-right'>Done</button>
 			</div>
 		</div>
 </div>
-	
+
 
 </body>
-
-
-<template id="shortcut-template">
-	<div class="row">
-		<div class='col-xs-12'>
-			<div class='panel panel-default'>
-				<div class='panel-heading'>Shortcut</div>
-				<div class='panel-body'>
-					
-				</div>
-			</div>
-		</div>
-	</div>
-
-</template>

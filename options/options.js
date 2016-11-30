@@ -62,7 +62,9 @@ options.help = function(){
 
 // load keyboad view and add event listeners to its components
 options.editShortcut = function(shortcutName){
-	$(event.target).parent().parent().parent().children().last().load('keyboard/keyboard.html',function(){
+	var shortcutPanel  = 	$(event.target).closest('.shortcut-panel');
+	var shortcutName = shortcutPanel.attr('data-shortcutName');
+	$(shortcutPanel).children().last().load('keyboard/keyboard.html',function(){
 		var keyboardRows = document.querySelectorAll('.keyboard-row');
 		for (var i=0; i<keyboardRows.length; i++){
 			keyboardRows[i].addEventListener('click', options.keyboardClick);
@@ -75,13 +77,32 @@ options.editShortcut = function(shortcutName){
 			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortcut);
 		}
 
-		// recover settings from chrome.storage.sync here
+		options.recoverShortcutSettings(shortcutName);
 	});
 
 }
 
+options.recoverShortcutSettings = function(shortcutName) {
+	chrome.storage.sync.get('shortcuts',function(obj){
+		if(obj.shortcuts){
+			var shortcutCondition = obj.shortcuts[shortcutName].condition;
+			options.displayShortcutSettings(shortcutName, shortcutCondition);
+		}
+	})
+
+}
+
+options.displayShortcutSettings = function(shortcutName, shortcutCondition) {
+
+	var keyboardView = $('div[data-shortcutName='+shortcutName+']').find('.keyboard-view');
+
+	for (var i=0; i<shortcutCondition.length; i++){
+		$(keyboardView).find('td[data-keyvalue='+shortcutCondition[i]+']').attr('bold','true');
+	};
+}
+
 options.cancelEditShortcut = function() {
-	$(event.target).parent().parent().parent().remove();
+	$(event.target).closest('.keyboard-view').remove();
 }
 
 options.saveEditShortcut = function() {
@@ -96,7 +117,8 @@ options.saveEditShortcut = function() {
 		}
 	}
 
-	var nameOfShortcutToSave = "closeLast";
+	var nameOfShortcutToSave = $(event.target).closest('.shortcut-panel').attr('data-shortcutName');
+
 	var shortcutToSave = {
 		name: nameOfShortcutToSave,
 		condition: selectedKeys
