@@ -1,26 +1,21 @@
 // inject event listener into page
 $(document).ready(function(){
+	console.log('hello');
 	document.onkeydown = content.handleKeyDown;
 	document.onkeyup = content.handleKeyUp;
 
 	// get array of keyboard shortcuts from chrome.storage.sync
-	content.shortcuts = [
-		{
-			name:"closeAll",
-			condition:[1,2,3]
-		},
-		{
-			name:"closeLast",
-			condition:[4,5,6]
-		}
-	];
+	chrome.storage.sync.get('shortcuts',function(obj){
+		content.shortcuts = obj.shortcuts;
+	})
+
 });
+
 
 var content = {};
 
 content.handleKeyDown = function(e) {
 	var code = e.which;
-
 	// in case numpad is used, translate to primary number keys
 	if(code>=96 && code<=105){
 		code = code - 48;
@@ -30,36 +25,36 @@ content.handleKeyDown = function(e) {
 		key.pressed = true;
 
 		content.checkShortcuts();
-		
+
 	};
 
 }
 
 content.handleKeyUp = function(e) {
 	var code = e.which;
-	console.log(code);
 	// in case numpad is used, translate to primary number keys
 	if(code>=96 && code<=105){
 		code = code - 48;
 	}
-	console.log(code);
 	var key = content.keycodes[code];
 	key.pressed = false;
 }
 
-content.checkShortcuts = function(shortcutArray) {
-	for (var i=0; i<shortcutArray.length; i++){
-		shortcut = shortcutArray[i];
-		if(checkShortcutCondition(shortcut)){
-			chrome.runtime.sendMessage({message: shortcut.name})
+content.checkShortcuts = function() {
+	for (var key in content.shortcuts){
+
+		shortcut = content.shortcuts[key];
+		if(content.checkShortcutCondition(shortcut)){
+			console.log(shortcut.name);
+			chrome.runtime.sendMessage({msg: shortcut.name})
+
 		}
 	}
 }
 
-content.checkShortcutCondition = function() {
-	var condition = [16,49];
+content.checkShortcutCondition = function(shortcut) {
+	var condition = shortcut.condition;
 	var conditionMet = false;
-
 	for(i=0; i<condition.length; i++){
 		if(content.keycodes[condition[i]].pressed){
 			conditionMet = true;
@@ -332,8 +327,5 @@ content.keycodes = {
 	222: {
 		key: "'",
 		pressed: false
-	}	
+	}
 }
-
-
-

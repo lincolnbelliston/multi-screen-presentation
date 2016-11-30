@@ -5,8 +5,8 @@ popup.lastLaunchArray = [];
 
 
 $(document).ready(function(){
-	
-	popup.populate();	
+
+	popup.populate();
 	document.querySelector('#go-to-options').addEventListener('click',function() {
 	  if (chrome.runtime.openOptionsPage) {
 		// New way to open options pages, if supported (Chrome 42+).
@@ -46,16 +46,16 @@ popup.launch = function(){
 	profileName = $('#profiles').val();
 	data = JSON.parse(popup.object[profileName]);
 
-	
+
 
 	var w = screen.width;
 	var h = screen.height;
-	
+
 	var left_0 = data.controlMonitorLocation[1];
 	var top_0 = data.controlMonitorLocation[0];
 
 	var windowsOpened = 0;
-	
+
 	$(data.monitorLocationArray).each(function(index,value){
 		url_string = data.urlArray[index];
 		if(url_string == '') {
@@ -63,16 +63,16 @@ popup.launch = function(){
 		} else if(!(/http/).test(url_string)){
 			url_string = 'https://' + url_string;
 		}
-		
+
 		var left_x = value[1];
 		var top_y = value[0];
-		
+
 		var x = Math.round(Number(w*(left_x - left_0)));
 		if(x == -0){left = 0};
 		var y = Math.round(Number(h*(top_y - top_0)));
 		if(y == -0){y = 0}
 
-		
+
 		chrome.windows.create({url: url_string,left:x,top:y,focused:false},
 			function(newWindow){
 				popup.ids.push(newWindow.id);
@@ -81,19 +81,19 @@ popup.launch = function(){
 				if(windowsOpened == data.numberOfMonitors){
 					popup.storeIDs(popup.ids, data.numberOfMonitors);
 				}
-				
+
 			}
 		)
 
-		
+
 	});
-	
-	
+
+
 }
 
 
 popup.storeIDs = function(ids, lastLaunch){
-	popup.lastLaunchArray.push(parseInt(lastLaunch));	
+	popup.lastLaunchArray.push(parseInt(lastLaunch));
 	chrome.runtime.sendMessage({
 		msg: "storeIDs",
 		ids: ids,
@@ -121,12 +121,9 @@ popup.getIDs = function(){
 
 
 popup.getAllIds = function(){
-	chrome.runtime.sendMessage({msg: "getAllIds"})
-}	
-
-popup.getLastIds = function(){
-	chrome.runtime.sendMessage({msg: "getLastIds"})
+	chrome.runtime.sendMessage({msg: "closeAll"})
 }
 
-
-
+popup.getLastIds = function(){
+	chrome.runtime.sendMessage({msg: "closeLast"})
+}

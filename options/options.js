@@ -1,7 +1,7 @@
 $(document).ready(function(){
 	//chrome.storage.sync.clear();
 	options.convertProfilesToNewNamingScheme();
-	
+
 	$('#profile-settings').hide();
 	$('#shortcuts').hide();
 	options.add_to_list = true;
@@ -10,11 +10,13 @@ $(document).ready(function(){
 	options.gridRows = 1;
 	options.numberOfMonitors = 1;
 	options.locations = [];
-	
-    $('[data-toggle="tooltip"]').tooltip();   
+	options.curr_profile = {};
+	options.currentShortcuts = {};
+
+    $('[data-toggle="tooltip"]').tooltip();
 	options.populate();
 
-	// set up listeners for page events 
+	// set up listeners for page events
 	document.querySelector('#edit').addEventListener('change',function(profileName,isnew){
 		existing = $('select[id=edit]').val();
 		options.edit(existing,false)
@@ -36,7 +38,7 @@ $(document).ready(function(){
 	document.querySelector('#back').addEventListener('click',options.back);
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
-	document.querySelector('#done').addEventListener('clicks',options.cancel);
+	document.querySelector('#done').addEventListener('click',options.cancel);
 	document.querySelector('#new-shortcut').addEventListener('click',options.addShortcut);
 
 	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button')
@@ -46,7 +48,7 @@ $(document).ready(function(){
 		})
 	}
 
-	
+
 
 
 });
@@ -69,58 +71,75 @@ options.editShortcut = function(shortcutName){
 		var saveEditShortcutButtons = document.querySelectorAll('.save-edit-shortcut');
 		var cancelEditShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
 		for (var i=0; i<saveEditShortcutButtons.length; i++){
-			saveEditShortcutButtons[i].addEventListener('click',options.saveEditShortCut);
-			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortCut);
+			saveEditShortcutButtons[i].addEventListener('click',options.saveEditShortcut);
+			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortcut);
 		}
 
 		// recover settings from chrome.storage.sync here
 	});
-	
+
 }
 
-options.cancelEditShortCut = function() {
+options.cancelEditShortcut = function() {
 	$(event.target).parent().parent().parent().remove();
 }
 
-options.saveEditShortCut = function() {
+options.saveEditShortcut = function() {
 	// store settings in chrome.storage.sync
 
 	var keyboardElements = $('td.keyboard-element');
 	var selectedKeys = [];
 	for (var i=0; i<keyboardElements.length; i++){
 		var key = keyboardElements[i];
-		if(key.attr('bold')){
-			selectedKeys.push(key.attr('data-keyvalue'));
+		if($(key).attr('bold')=="true"){
+			selectedKeys.push($(key).attr('data-keyvalue'));
 		}
 	}
+
+	var nameOfShortcutToSave = "closeLast";
+	var shortcutToSave = {
+		name: nameOfShortcutToSave,
+		condition: selectedKeys
+	}
+	chrome.storage.sync.get('shortcuts',function(obj){
+		if(obj.shortcuts){
+			options.currentShortcuts = obj.shortcuts;
+		}
+		options.currentShortcuts[nameOfShortcutToSave] = shortcutToSave;
+		chrome.storage.sync.set(
+		{
+			'shortcuts': options.currentShortcuts
+		});
+	});
+
+	options.cancelEditShortcut();
 }
 
 
 options.keyboardClick = function(event){
-	console.log('click')
 	if(event.target !== event.currentTarget){
 		var clickedItem = event.target;
-		
+
 		if($(clickedItem).attr('bold') == 'false'){
 			$(clickedItem).attr('bold',true)
 		} else if($(clickedItem).attr('bold')){
 			$(clickedItem).attr('bold',false)
 		}
-		
+
 	}
 	event.stopPropagation();
 }
 
 
 options.gridY = function(){
-	
+
 	var r = options.gridRows
 
-	var rowStr = ""; 
+	var rowStr = "";
 	for(var k=0; k<options.gridColumns; k++){
 		rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+r+' data-col='+k+'></td>');
-	} 
-	
+	}
+
 	var row = Number(document.getElementById('row').value);
 	if (row>r){
 		for (var j=r; j<row; j++){
@@ -131,17 +150,17 @@ options.gridY = function(){
 		var j = $('tr.monitor-grid-row').length
 		for (j; j>row; j--){
 			$('tr.monitor-grid-row').last().remove();
-			r = --r;	
+			r = --r;
 		}
 	}
 	options.gridRows = row;
-	
+
 }
 
 options.gridX = function(){
 	var c = options.gridColumns
-	var r = options.gridRows		
-	
+	var r = options.gridRows
+
 	var col = Number(document.getElementById('col').value);
 	if (col>c){
 		for (var j=c; j<col; j++){
@@ -157,7 +176,7 @@ options.gridX = function(){
 			})
 		}
 	}
-	options.gridColumns = col;	
+	options.gridColumns = col;
 
 }
 
@@ -166,24 +185,24 @@ options.clickGrid = function(event){
 	if(event.target !== event.currentTarget){
 		var clickedItem = event.target;
 		var monNum = Number($('#monNum').val())
-		
-		if (options.currMon <= monNum){	
+
+		if (options.currMon <= monNum){
 			if($(clickedItem).attr('bold') == 'false'){
 				$(clickedItem).attr('bold',true).html(options.currMon)
 				options.currMon = ++options.currMon
-			} 
+			}
 		}
 	}
-	event.stopPropagation();	
+	event.stopPropagation();
 }
 
 options.clickCtrl = function() {
 	options.alreadyClicked = true;
 	if(event.target !== event.currentTarget){
-		var dblClicked;	
+		var dblClicked;
 		dblClicked = event.target;
 		$('td.monitor-grid-element[clicked=true]').attr('clicked',false);
-		
+
 		$(dblClicked).attr('clicked',true);
 	}
 	event.stopPropagation();
@@ -192,7 +211,7 @@ options.clickCtrl = function() {
 options.clear = function(){
 	$('td.monitor-grid-element').attr('bold',false).attr('clicked',false).html('');
 	options.currMon = 1;
-	
+
 }
 
 options.back = function(){
@@ -212,8 +231,8 @@ options.populate = function(){
 		if (options.object == undefined){
 			chrome.storage.sync.set({
 				'settings':{}
-			});	
-		} else {	
+			});
+		} else {
 		$.each(options.object,function(index,value){
 			prf = JSON.parse(value).profileName
 			options.profile_names.push(prf);
@@ -222,7 +241,7 @@ options.populate = function(){
 		$('#edit').val('none');
 		}
 	});
-} 
+}
 
 
 // edit a saved profile
@@ -232,7 +251,7 @@ options.edit = function(profileName,isnew) {
 	$('#profile-settings').show();
 	$('#delete').attr('disabled',true)
 	options.alreadyClicked = false;
-	
+
 	if(isnew==false){
 		// retrieve settings and populate fields;
 		options.alreadyClicked = true;
@@ -282,12 +301,11 @@ options.urlField = function() {
 	options.numberOfMonitors = monitors;
 }
 
-options.curr_profile = {}
 options.save = function() {
 	if (options.alreadyClicked == false){
 		chrome.extension.getBackgroundPage().alert('Error: no control monitor selected. Please double click the square that corresponds to the control monitor (the monitor on which the start menu is displayed.')
 	} else{
-	
+
 		var name = document.getElementById('name').value.replace(' ','_');
 		var monitors = document.getElementById('monNum').value;
 		var rows = document.getElementById('row').value;
@@ -300,10 +318,10 @@ options.save = function() {
 			locations.push([$(value).attr('data-row'),$(value).attr('data-col'),$(value).html()])
 		});
 		var project_urls = [];
-		$('.url input[type=url]').each(function(index,value){    
+		$('.url input[type=url]').each(function(index,value){
 			project_urls.push(this.value);
 		});
-		
+
 		var settings = {
 			profileName: name,
 			numberOfMonitors: monitors,
@@ -315,14 +333,14 @@ options.save = function() {
 			save: save
 		}
 		var exit = false
-		var confirm_overwrite = false	
-		// check if name is in use 
+		var confirm_overwrite = false
+		// check if name is in use
 		$.each(options.profile_names, function(index,value){
 			if (options.add_to_list==true && value == name){
 				confirm_overwrite = true
 			}
 		});
-		
+
 		if (confirm_overwrite){
 			var overwrite = chrome.extension.getBackgroundPage().confirm('A profile already exists by that name. Overwrite?')
 			if(overwrite){
@@ -332,28 +350,28 @@ options.save = function() {
 				exit = true;
 			}
 		}
-		
+
 		if(!exit){
 			if (options.add_to_list==true){
 				$('#edit').append('<option value="'+name+'">'+name+'</option>');
 			}
-			
-			// to save, the entire object must be retrieved, the individual profile altered, 
+
+			// to save, the entire object must be retrieved, the individual profile altered,
 			// and then the whole object saved again
 			chrome.storage.sync.get('settings',function(obj){
 				options.curr_profile = obj.settings;
 				options.curr_profile[name] = JSON.stringify(settings);
 				chrome.storage.sync.set({
 					'settings':options.curr_profile
-				});	
+				});
 			});
-			
+
 			$('#profile-settings').hide();
 			$('#main-menu').show();
 			$('#edit').val('none');
 			options.refresh();
 		};
-	};	
+	};
 }
 
 // reset settings to "New Profile" settings
@@ -373,7 +391,7 @@ options.refresh = function() {
 
 // delete profile. Since profile is deleted by accessing the name, if two items on the list have the same name, both will be deleted
 options.deleteProfile = function() {
-	
+
 		//var del = chrome.extension.getBackgroundPage().confirm('Are you sure you want to delete this profile?');
 		//if(del){
 			var toDelete = $('#name').val();
@@ -387,7 +405,7 @@ options.deleteProfile = function() {
 				options.cancel()
 			});
 		//};
-	
+
 }
 
 options.shortcuts = function(){
@@ -453,13 +471,10 @@ options.convertProfilesToNewNamingScheme = function() {
 
 
 			newObject[index] = JSON.stringify(profileObject);
-			
+
 		});
 		chrome.storage.sync.set({
 				'settings':newObject
 		})
 	});
 }
-
-
-

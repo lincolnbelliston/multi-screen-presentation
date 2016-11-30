@@ -9,18 +9,18 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			background.storeIDs(message.ids, message.lastLaunch);
 			break;
 
-		case("getAllIds"):
-			background.getAllIds();
+		case("closeAll"):
+			background.closeAll();
 			break;
 
-		case("getLastIds"):
-			background.getLastIds();
+		case("closeLast"):
+			background.closeLast();
 			break
 
 		default:
 			console.log("Unknown message recieved");
 	}
-	
+
 })
 
 var background = {};
@@ -38,15 +38,15 @@ background.storeIDs = function(ids, lastLaunch){
 
 // on "Close" click, access array of saved windows ids
 
-background.getAllIds = function(){
+background.closeAll = function(){
 	chrome.storage.sync.get('kill',function(obj){
 		background.ids = obj.kill;
 		background.kill();
-		
+
 		})
 	};
-	
-background.getLastIds = function(){
+
+background.closeLast = function(){
 
 	chrome.storage.sync.get('kill',function(obj){
 		background.ids = obj.kill;
@@ -55,8 +55,8 @@ background.getLastIds = function(){
 			background.killLast();
 
 		})
-		
-	
+
+
 	});
 }
 
@@ -69,7 +69,7 @@ background.kill = function(){
 		catch(err){
 			console.log('Window with id '+value+' already closed.')
 		}
-	});	
+	});
 
 	background.ids = [];
 	background.lastLaunch = [];
@@ -81,7 +81,7 @@ background.killLast = function(){
 	console.log(background.lastLaunch);
 	var k = background.lastLaunch.pop();
 	var n = background.ids.length;
-	
+
 
 	for (var i = n-1; i >= n-k; i--){
 		try{
