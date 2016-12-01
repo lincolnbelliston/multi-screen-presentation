@@ -39,7 +39,7 @@ $(document).ready(function(){
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
 	document.querySelector('#done').addEventListener('click',options.cancel);
-	document.querySelector('#new-shortcut').addEventListener('click',options.addShortcut);
+	//document.querySelector('#new-shortcut').addEventListener('click',options.addShortcut);
 
 	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button')
 	for (var i=0; i<editShorcutButtons.length; i++){
@@ -62,6 +62,8 @@ options.help = function(){
 
 // load keyboad view and add event listeners to its components
 options.editShortcut = function(shortcutName){
+$(event.target).hide();
+
 	var shortcutPanel  = 	$(event.target).closest('.shortcut-panel');
 	var shortcutName = shortcutPanel.attr('data-shortcutName');
 	$(shortcutPanel).children().last().load('keyboard/keyboard.html',function(){
@@ -72,9 +74,11 @@ options.editShortcut = function(shortcutName){
 
 		var saveEditShortcutButtons = document.querySelectorAll('.save-edit-shortcut');
 		var cancelEditShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
+		var clearEditShortcutButtons = document.querySelectorAll('.clear-edit-shortcut');
 		for (var i=0; i<saveEditShortcutButtons.length; i++){
 			saveEditShortcutButtons[i].addEventListener('click',options.saveEditShortcut);
 			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortcut);
+			clearEditShortcutButtons[i].addEventListener('click',options.clearEditShortcut);
 		}
 
 		options.recoverShortcutSettings(shortcutName);
@@ -102,7 +106,9 @@ options.displayShortcutSettings = function(shortcutName, shortcutCondition) {
 }
 
 options.cancelEditShortcut = function() {
+	$(event.target).closest('.shortcut-panel').find('.edit-shortcut-button').show();
 	$(event.target).closest('.keyboard-view').remove();
+
 }
 
 options.saveEditShortcut = function() {
@@ -135,6 +141,13 @@ options.saveEditShortcut = function() {
 	});
 
 	options.cancelEditShortcut();
+}
+
+options.clearEditShortcut = function(){
+	var boldKeyboardElements = $('td.keyboard-element[bold="true"]');
+	for (var i=0; i<boldKeyboardElements.length; i++){
+		$(boldKeyboardElements[i]).attr('bold','false');
+	}
 }
 
 
@@ -444,6 +457,10 @@ options.addShortcut = function(){
 // close editor without saving changes
 options.cancel = function() {
 	options.refresh();
+	var cancelButtons = document.querySelectorAll('.cancel-edit-shortcut')
+	for (i=0; i<cancelButtons.length; i++){
+		$(cancelButtons[i]).click();
+	}
 	$('#profile-settings').hide();
 	$('#shortcuts').hide();
 	$('#main-menu').show();
