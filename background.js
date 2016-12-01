@@ -1,6 +1,5 @@
-// close windows on "ctrl-shift-k" event
-
-// listening for 'kill' event from content script
+var background = {};
+// listening for message events from content script
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	var msg = message.msg
 
@@ -23,7 +22,6 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 
 })
 
-var background = {};
 
 // as windows are opened, save window ids to an array
 background.storeIDs = function(ids, lastLaunch){

@@ -1,3 +1,11 @@
+/*//////////////////////////////////////////////////
+This code is injected into all webpages when the extension is enabled.
+Listens for key events and compares them with saved keyboard shortcuts,
+sending a message to background.js when a keyboard shortcut is recognized.
+*///////////////////////////////////////////////////
+
+
+
 // inject event listener into page
 $(document).ready(function(){
 	document.onkeydown = content.handleKeyDown;

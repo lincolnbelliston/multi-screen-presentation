@@ -1,3 +1,8 @@
+/*////////////////////////////////////////////////////////////////
+Logic for options page.
+*////////////////////////////////////////////////////////////////
+
+var options = {};
 $(document).ready(function(){
 	//chrome.storage.sync.clear();
 	options.convertProfilesToNewNamingScheme();
@@ -53,119 +58,120 @@ $(document).ready(function(){
 
 });
 
-var options = {};
+// update naming scheme if data was saved using old version
+options.convertProfilesToNewNamingScheme = function() {
+	chrome.storage.sync.get('settings',function(obj){
+		var newObject = obj.settings;
+		$.each(obj.settings,function(index,value){
+			profileObject = JSON.parse(value)
 
-options.help = function(){
-	var help = 'Each grid square represents a monitor. Expand the grid to the desired dimensions, then click a sequence of squares corresponding to the location of the presentation monitors. Then double click the square corresponding to the control monitor (the monitor containing the Start menu).'
-	chrome.extension.getBackgroundPage().alert(help);
-}
+			if(profileObject.name){
+				profileObject.profileName = profileObject.name;
+				delete profileObject.name;
+			}
 
-// load keyboad view and add event listeners to its components
-options.editShortcut = function(shortcutName){
-$(event.target).hide();
+			if(profileObject.loc){
+				profileObject.monitorLocationArray = profileObject.loc;
+				delete profileObject.loc;
+			}
 
-	var shortcutPanel  = 	$(event.target).closest('.shortcut-panel');
-	var shortcutName = shortcutPanel.attr('data-shortcutName');
-	$(shortcutPanel).children().last().load('keyboard/keyboard.html',function(){
-		var keyboardRows = document.querySelectorAll('.keyboard-row');
-		for (var i=0; i<keyboardRows.length; i++){
-			keyboardRows[i].addEventListener('click', options.keyboardClick);
-		}
+			if(profileObject.r){
+				profileObject.gridRows = profileObject.r;
+				delete profileObject.r;
+			}
 
-		var saveEditShortcutButtons = document.querySelectorAll('.save-edit-shortcut');
-		var cancelEditShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
-		var clearEditShortcutButtons = document.querySelectorAll('.clear-edit-shortcut');
-		for (var i=0; i<saveEditShortcutButtons.length; i++){
-			saveEditShortcutButtons[i].addEventListener('click',options.saveEditShortcut);
-			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortcut);
-			clearEditShortcutButtons[i].addEventListener('click',options.clearEditShortcut);
-		}
+			if(profileObject.c){
+				profileObject.gridColumns = profileObject.c;
+				delete profileObject.c;
+			}
 
-		options.recoverShortcutSettings(shortcutName);
+			if(profileObject.mon){
+				profileObject.numberOfMonitors = profileObject.mon;
+				delete profileObject.mon;
+			}
+
+			if(profileObject.url){
+				profileObject.urlArray = profileObject.url;
+				delete profileObject.url;
+			}
+
+			if(profileObject.ctl){
+				profileObject.controlMonitorLocation = profileObject.ctl;
+				delete profileObject.ctl;
+			}
+
+			newObject[index] = JSON.stringify(profileObject);
+
+		});
+		chrome.storage.sync.set({
+				'settings':newObject
+		})
 	});
-
 }
 
-options.recoverShortcutSettings = function(shortcutName) {
-	chrome.storage.sync.get('shortcuts',function(obj){
-		if(obj.shortcuts){
-			var shortcutCondition = obj.shortcuts[shortcutName].condition;
-			options.displayShortcutSettings(shortcutName, shortcutCondition);
-		}
-	})
+/*////////////////////////////////////////////////////////////////
+Functions for edit profile menu
+*/////////////////////////////////////////////////////////////////
+// edit a profile (saved or new)
+options.edit = function(profileName,isnew) {
+	$('#name').val(profileName);
+	$('#main-menu').hide();
+	$('#profile-settings').show();
+	$('#delete').attr('disabled',true)
+	options.alreadyClicked = false;
 
-}
-
-options.displayShortcutSettings = function(shortcutName, shortcutCondition) {
-
-	var keyboardView = $('div[data-shortcutName='+shortcutName+']').find('.keyboard-view');
-
-	for (var i=0; i<shortcutCondition.length; i++){
-		$(keyboardView).find('td[data-keyvalue='+shortcutCondition[i]+']').attr('bold','true');
+	if(isnew==false){
+		// retrieve settings and populate fields;
+		options.alreadyClicked = true;
+		$('#delete').attr('disabled',false)
+		options.add_to_list = false
+		chrome.storage.sync.get('settings',function(obj){
+			var object = JSON.parse(obj.settings[profileName]);
+			$('#name').val(object.profileName);
+			$('#monNum').val(object.numberOfMonitors);
+			$('#row').val(object.gridRows);
+			$('#col').val(object.gridColumns);
+			options.gridY();
+			options.gridX();
+			$(object.monitorLocationArray).each(function(index,value){
+				var numberOfMonitors = $('td.monitor-grid-element[data-row='+value[0]+'][data-col='+value[1]+']');
+				$(numberOfMonitors).attr('bold',true).html(value[2]);
+				options.currMon = Number(value[2]) + 1;
+			});
+			var c = $('td.monitor-grid-element[data-row='+object.controlMonitorLocation[0]+'][data-col='+object.controlMonitorLocation[1]+']');
+			$('td.monitor-grid-element').attr('clicked',false);
+			$(c).attr('clicked',true);
+			options.urlField();
+			var n = 0;
+			$('.url input').each(function(index,value){
+				$(this).val(object.urlArray[index]);
+			});
+		});
 	};
 }
 
-options.cancelEditShortcut = function() {
-	$(event.target).closest('.shortcut-panel').find('.edit-shortcut-button').show();
-	$(event.target).closest('.keyboard-view').remove();
-
-}
-
-options.saveEditShortcut = function() {
-	// store settings in chrome.storage.sync
-
-	var keyboardElements = $('td.keyboard-element');
-	var selectedKeys = [];
-	for (var i=0; i<keyboardElements.length; i++){
-		var key = keyboardElements[i];
-		if($(key).attr('bold')=="true"){
-			selectedKeys.push($(key).attr('data-keyvalue'));
-		}
-	}
-
-	var nameOfShortcutToSave = $(event.target).closest('.shortcut-panel').attr('data-shortcutName');
-
-	var shortcutToSave = {
-		name: nameOfShortcutToSave,
-		condition: selectedKeys
-	}
-	chrome.storage.sync.get('shortcuts',function(obj){
-		if(obj.shortcuts){
-			options.currentShortcuts = obj.shortcuts;
-		}
-		options.currentShortcuts[nameOfShortcutToSave] = shortcutToSave;
-		chrome.storage.sync.set(
-		{
-			'shortcuts': options.currentShortcuts
+// populate dropdown list with saved profiles
+options.populate = function(){
+	$('#edit').html('');
+	options.profile_names = [];
+	chrome.storage.sync.get('settings',function(obj){
+		options.object = obj.settings;
+		if (options.object == undefined){
+			chrome.storage.sync.set({
+				'settings':{}
+			});
+		} else {
+		$.each(options.object,function(index,value){
+			prf = JSON.parse(value).profileName
+			options.profile_names.push(prf);
+			$('#edit').append('<option value="'+prf+'">'+prf+'</option>');
 		});
-	});
-
-	options.cancelEditShortcut();
-}
-
-options.clearEditShortcut = function(){
-	var boldKeyboardElements = $('td.keyboard-element[bold="true"]');
-	for (var i=0; i<boldKeyboardElements.length; i++){
-		$(boldKeyboardElements[i]).attr('bold','false');
-	}
-}
-
-
-options.keyboardClick = function(event){
-	if(event.target !== event.currentTarget){
-		var clickedItem = event.target;
-
-		if($(clickedItem).attr('bold') == 'false'){
-			$(clickedItem).attr('bold',true)
-		} else if($(clickedItem).attr('bold')){
-			$(clickedItem).attr('bold',false)
+		$('#edit').val('none');
 		}
-
-	}
-	event.stopPropagation();
+	});
 }
 
-
+// update the monitor grid display when row/column controls change
 options.gridY = function(){
 
 	var r = options.gridRows
@@ -215,7 +221,7 @@ options.gridX = function(){
 
 }
 
-
+// when a grid element is clicked, highlight element and display monitor number
 options.clickGrid = function(event){
 	if(event.target !== event.currentTarget){
 		var clickedItem = event.target;
@@ -231,6 +237,7 @@ options.clickGrid = function(event){
 	event.stopPropagation();
 }
 
+// when a grid element is double-clicked, highlight element
 options.clickCtrl = function() {
 	options.alreadyClicked = true;
 	if(event.target !== event.currentTarget){
@@ -243,12 +250,7 @@ options.clickCtrl = function() {
 	event.stopPropagation();
 }
 
-options.clear = function(){
-	$('td.monitor-grid-element').attr('bold',false).attr('clicked',false).html('');
-	options.currMon = 1;
-
-}
-
+// undo last section from monitor grid
 options.back = function(){
 	$('td.monitor-grid-element:contains("'+(options.currMon-1)+'")').attr('bold',false).html('');
 	if (options.currMon > 1){
@@ -256,68 +258,18 @@ options.back = function(){
 	};
 }
 
+// clear selections from grid display
+options.clear = function(){
+	$('td.monitor-grid-element').attr('bold',false).attr('clicked',false).html('');
+	options.currMon = 1;
 
-// populate dropdown list with saved profiles
-options.populate = function(){
-	$('#edit').html('');
-	options.profile_names = [];
-	chrome.storage.sync.get('settings',function(obj){
-		options.object = obj.settings;
-		if (options.object == undefined){
-			chrome.storage.sync.set({
-				'settings':{}
-			});
-		} else {
-		$.each(options.object,function(index,value){
-			prf = JSON.parse(value).profileName
-			options.profile_names.push(prf);
-			$('#edit').append('<option value="'+prf+'">'+prf+'</option>');
-		});
-		$('#edit').val('none');
-		}
-	});
 }
 
-
-// edit a saved profile
-options.edit = function(profileName,isnew) {
-	$('#name').val(profileName);
-	$('#main-menu').hide();
-	$('#profile-settings').show();
-	$('#delete').attr('disabled',true)
-	options.alreadyClicked = false;
-
-	if(isnew==false){
-		// retrieve settings and populate fields;
-		options.alreadyClicked = true;
-		$('#delete').attr('disabled',false)
-		options.add_to_list = false
-		chrome.storage.sync.get('settings',function(obj){
-			var object = JSON.parse(obj.settings[profileName]);
-			$('#name').val(object.profileName);
-			$('#monNum').val(object.numberOfMonitors);
-			$('#row').val(object.gridRows);
-			$('#col').val(object.gridColumns);
-			options.gridY();
-			options.gridX();
-			$(object.monitorLocationArray).each(function(index,value){
-				var numberOfMonitors = $('td.monitor-grid-element[data-row='+value[0]+'][data-col='+value[1]+']');
-				$(numberOfMonitors).attr('bold',true).html(value[2]);
-				options.currMon = Number(value[2]) + 1;
-			});
-			var c = $('td.monitor-grid-element[data-row='+object.controlMonitorLocation[0]+'][data-col='+object.controlMonitorLocation[1]+']');
-			$('td.monitor-grid-element').attr('clicked',false);
-			$(c).attr('clicked',true);
-			options.urlField();
-			var n = 0;
-			$('.url input').each(function(index,value){
-				$(this).val(object.urlArray[index]);
-			});
-		});
-	};
+// show help alert on click
+options.help = function(){
+	var help = 'Each grid square represents a monitor. Expand the grid to the desired dimensions, then click a sequence of squares corresponding to the location of the presentation monitors. Then double click the square corresponding to the control monitor (the monitor containing the Start menu).'
+	chrome.extension.getBackgroundPage().alert(help);
 }
-
-
 
 // add url fields when # of Monitors is changed (this could be set by # of browsers later on)
 options.urlField = function() {
@@ -421,6 +373,7 @@ options.refresh = function() {
 	options.currMon = 1;
 	options.urlField();
 	options.add_to_list = true;
+	options.clear();
 	setTimeout(options.populate,1000);
 }
 
@@ -443,17 +396,6 @@ options.deleteProfile = function() {
 
 }
 
-options.shortcuts = function(){
-	$('#main-menu').hide();
-	$('#shortcuts').show();
-}
-
-options.addShortcut = function(){
-
-}
-
-
-
 // close editor without saving changes
 options.cancel = function() {
 	options.refresh();
@@ -467,53 +409,122 @@ options.cancel = function() {
 	$('#edit').val('none');
 }
 
-options.convertProfilesToNewNamingScheme = function() {
-	chrome.storage.sync.get('settings',function(obj){
-		var newObject = obj.settings;
-		$.each(obj.settings,function(index,value){
-			profileObject = JSON.parse(value)
-
-			if(profileObject.name){
-				profileObject.profileName = profileObject.name;
-				delete profileObject.name;
-			}
-
-			if(profileObject.loc){
-				profileObject.monitorLocationArray = profileObject.loc;
-				delete profileObject.loc;
-			}
-
-			if(profileObject.r){
-				profileObject.gridRows = profileObject.r;
-				delete profileObject.r;
-			}
-
-			if(profileObject.c){
-				profileObject.gridColumns = profileObject.c;
-				delete profileObject.c;
-			}
-
-			if(profileObject.mon){
-				profileObject.numberOfMonitors = profileObject.mon;
-				delete profileObject.mon;
-			}
-
-			if(profileObject.url){
-				profileObject.urlArray = profileObject.url;
-				delete profileObject.url;
-			}
-
-			if(profileObject.ctl){
-				profileObject.controlMonitorLocation = profileObject.ctl;
-				delete profileObject.ctl;
-			}
 
 
-			newObject[index] = JSON.stringify(profileObject);
+/*////////////////////////////////////////////////////////////////
+Functions for shortcut settings menu
+*/////////////////////////////////////////////////////////////////
+// When the "Shortcuts" button is clicked open shortcuts menu
+options.shortcuts = function(){
+	$('#main-menu').hide();
+	$('#shortcuts').show();
+}
 
-		});
-		chrome.storage.sync.set({
-				'settings':newObject
-		})
+// load keyboad view and add event listeners to its components
+options.editShortcut = function(shortcutName){
+	$(event.target).hide();
+	$('.cancel-edit-shortcut').click();
+
+	var shortcutPanel  = 	$(event.target).closest('.shortcut-panel');
+	var shortcutName = shortcutPanel.attr('data-shortcutName');
+	$(shortcutPanel).children().last().load('keyboard/keyboard.html',function(){
+		var keyboardRows = document.querySelectorAll('.keyboard-row');
+		for (var i=0; i<keyboardRows.length; i++){
+			keyboardRows[i].addEventListener('click', options.keyboardClick);
+		}
+
+		var saveEditShortcutButtons = document.querySelectorAll('.save-edit-shortcut');
+		var cancelEditShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
+		var clearEditShortcutButtons = document.querySelectorAll('.clear-edit-shortcut');
+		for (var i=0; i<saveEditShortcutButtons.length; i++){
+			saveEditShortcutButtons[i].addEventListener('click',options.saveEditShortcut);
+			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortcut);
+			clearEditShortcutButtons[i].addEventListener('click',options.clearEditShortcut);
+		}
+
+		options.recoverShortcutSettings(shortcutName);
 	});
+
+}
+
+options.recoverShortcutSettings = function(shortcutName) {
+	chrome.storage.sync.get('shortcuts',function(obj){
+		if(obj.shortcuts){
+			var shortcutCondition = obj.shortcuts[shortcutName].condition;
+			options.displayShortcutSettings(shortcutName, shortcutCondition);
+		}
+	})
+
+}
+
+options.displayShortcutSettings = function(shortcutName, shortcutCondition) {
+
+	var keyboardView = $('div[data-shortcutName='+shortcutName+']').find('.keyboard-view');
+
+	for (var i=0; i<shortcutCondition.length; i++){
+		$(keyboardView).find('td[data-keyvalue='+shortcutCondition[i]+']').attr('bold','true');
+	};
+}
+
+options.keyboardClick = function(event){
+	if(event.target !== event.currentTarget){
+		var clickedItem = event.target;
+
+		if($(clickedItem).attr('bold') == 'false'){
+			$(clickedItem).attr('bold',true)
+		} else if($(clickedItem).attr('bold')){
+			$(clickedItem).attr('bold',false)
+		}
+
+	}
+	event.stopPropagation();
+}
+
+options.saveEditShortcut = function() {
+	// store settings in chrome.storage.sync
+
+	var keyboardElements = $('td.keyboard-element');
+	var selectedKeys = [];
+	for (var i=0; i<keyboardElements.length; i++){
+		var key = keyboardElements[i];
+		if($(key).attr('bold')=="true"){
+			selectedKeys.push($(key).attr('data-keyvalue'));
+		}
+	}
+
+	var nameOfShortcutToSave = $(event.target).closest('.shortcut-panel').attr('data-shortcutName');
+
+	var shortcutToSave = {
+		name: nameOfShortcutToSave,
+		condition: selectedKeys
+	}
+	chrome.storage.sync.get('shortcuts',function(obj){
+		if(obj.shortcuts){
+			options.currentShortcuts = obj.shortcuts;
+		}
+		options.currentShortcuts[nameOfShortcutToSave] = shortcutToSave;
+		chrome.storage.sync.set(
+		{
+			'shortcuts': options.currentShortcuts
+		});
+	});
+
+	options.cancelEditShortcut();
+}
+
+options.clearEditShortcut = function(){
+	var boldKeyboardElements = $('td.keyboard-element[bold="true"]');
+	for (var i=0; i<boldKeyboardElements.length; i++){
+		$(boldKeyboardElements[i]).attr('bold','false');
+	}
+}
+
+options.cancelEditShortcut = function() {
+	$(event.target).closest('.shortcut-panel').find('.edit-shortcut-button').show();
+	$(event.target).closest('.keyboard-view').remove();
+
+}
+
+options.addShortcut = function(){
+	// insert code to handle adding a new shortcut here
 }
