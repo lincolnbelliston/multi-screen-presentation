@@ -66,38 +66,63 @@ options.convertProfilesToNewNamingScheme = function() {
 			profileObject = JSON.parse(value)
 
 			if(profileObject.name){
-				profileObject.profileName = profileObject.name;
+				profileObject.n = profileObject.name;
 				delete profileObject.name;
 			}
 
+			if(profileObject.profileName){
+				profileObject.n = profileObject.profileName;
+				delete profileObject.profileName;
+			}
+
 			if(profileObject.loc){
-				profileObject.monitorLocationArray = profileObject.loc;
+				profileObject.l = profileObject.loc;
 				delete profileObject.loc;
 			}
 
-			if(profileObject.r){
-				profileObject.gridRows = profileObject.r;
-				delete profileObject.r;
+			if(profileObject.monitorLocationArray) {
+				profileObject.l = profileObject.monitorLocationArray;
+				delete profileObject.monitorLocationArray;
 			}
 
-			if(profileObject.c){
-				profileObject.gridColumns = profileObject.c;
-				delete profileObject.c;
+			if(profileObject.gridRows){
+				profileObject.r = profileObject.gridRows;
+				delete profileObject.gridRows;
+			}
+
+			if(profileObject.gridColumns){
+				profileObject.c = profileObject.gridColumns;
+				delete profileObject.gridColumns;
 			}
 
 			if(profileObject.mon){
-				profileObject.numberOfMonitors = profileObject.mon;
+				profileObject.m = profileObject.mon;
 				delete profileObject.mon;
 			}
 
+			if(profileObject.numberOfMonitors) {
+				profileObject.m = profileObject.numberOfMonitors;
+				delete profileObject.numberOfMonitors;
+			}
+
 			if(profileObject.url){
-				profileObject.urlArray = profileObject.url;
+				profileObject.u = profileObject.url;
 				delete profileObject.url;
+			}
+
+			if(profileObject.urlArray){
+				profileObject.u = profileObject.urlArray;
+				delete profileObject.urlArray;
 			}
 
 			if(profileObject.ctl){
 				profileObject.controlMonitorLocation = profileObject.ctl;
 				delete profileObject.ctl;
+			}
+
+			if(profileObject.controlMonitorLocation) {
+				profileObject.t = profileObject.controlMonitorLocation;
+				delete profileObject.controlMonitorLocation;
 			}
 
 			newObject[index] = JSON.stringify(profileObject);
@@ -127,24 +152,24 @@ options.edit = function(profileName,isnew) {
 		options.add_to_list = false
 		chrome.storage.sync.get('settings',function(obj){
 			var object = JSON.parse(obj.settings[profileName]);
-			$('#name').val(object.profileName);
-			$('#monNum').val(object.numberOfMonitors);
-			$('#row').val(object.gridRows);
-			$('#col').val(object.gridColumns);
+			$('#name').val(object.n);
+			$('#monNum').val(object.m);
+			$('#row').val(object.r);
+			$('#col').val(object.c);
 			options.gridY();
 			options.gridX();
-			$(object.monitorLocationArray).each(function(index,value){
+			$(object.l).each(function(index,value){
 				var numberOfMonitors = $('td.monitor-grid-element[data-row='+value[0]+'][data-col='+value[1]+']');
 				$(numberOfMonitors).attr('bold',true).html(value[2]);
 				options.currMon = Number(value[2]) + 1;
 			});
-			var c = $('td.monitor-grid-element[data-row='+object.controlMonitorLocation[0]+'][data-col='+object.controlMonitorLocation[1]+']');
+			var c = $('td.monitor-grid-element[data-row='+object.t[0]+'][data-col='+object.t[1]+']');
 			$('td.monitor-grid-element').attr('clicked',false);
 			$(c).attr('clicked',true);
 			options.urlField();
 			var n = 0;
 			$('.url input').each(function(index,value){
-				$(this).val(object.urlArray[index]);
+				$(this).val(object.u[index]);
 			});
 		});
 	};
@@ -158,11 +183,11 @@ options.populate = function(){
 		options.object = obj.settings;
 		if (options.object == undefined){
 			chrome.storage.sync.set({
-				'settings':{}
+				'settings':'{}'
 			});
 		} else {
 		$.each(options.object,function(index,value){
-			prf = JSON.parse(value).profileName
+			prf = JSON.parse(value).n
 			options.profile_names.push(prf);
 			$('#edit').append('<option value="'+prf+'">'+prf+'</option>');
 		});
@@ -174,10 +199,10 @@ options.populate = function(){
 // update the monitor grid display when row/column controls change
 options.gridY = function(){
 
-	var r = options.gridRows
+	var r = options.r
 
 	var rowStr = "";
-	for(var k=0; k<options.gridColumns; k++){
+	for(var k=0; k<options.c; k++){
 		rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+r+' data-col='+k+'></td>');
 	}
 
@@ -194,13 +219,13 @@ options.gridY = function(){
 			r = --r;
 		}
 	}
-	options.gridRows = row;
+	options.r = row;
 
 }
 
 options.gridX = function(){
-	var c = options.gridColumns
-	var r = options.gridRows
+	var c = options.c
+	var r = options.r
 
 	var col = Number(document.getElementById('col').value);
 	if (col>c){
@@ -217,7 +242,7 @@ options.gridX = function(){
 			})
 		}
 	}
-	options.gridColumns = col;
+	options.c = col;
 
 }
 
@@ -273,7 +298,7 @@ options.help = function(){
 
 // add url fields when # of Monitors is changed (this could be set by # of browsers later on)
 options.urlField = function() {
-	var i = options.numberOfMonitors
+	var i = options.m
 	var monitors = Number(document.getElementById('monNum').value);
 	if (monitors>i){
 		for (var j=i; j<monitors; j++){
@@ -285,7 +310,7 @@ options.urlField = function() {
 				$('.url').last().remove();
 		}
 	}
-	options.numberOfMonitors = monitors;
+	options.m = monitors;
 }
 
 options.save = function() {
@@ -309,15 +334,18 @@ options.save = function() {
 			project_urls.push(this.value);
 		});
 
+		// This settings object will be saved in chrome.storage.sync a a stringified
+		// JSON object. The byte (character) limit per item is 8192, and the total is
+		// 102400. TO save space, I have chosen minimal, rather than descriptive
+		// names for keys.
 		var settings = {
-			profileName: name,
-			numberOfMonitors: monitors,
-			gridRows: rows,
-			gridColumns: col,
-			monitorLocationArray: locations,
-			urlArray: project_urls,
-			controlMonitorLocation: control,
-			save: save
+			n: name,
+			m: monitors,
+			r: rows,
+			c: col,
+			l: locations,
+			u: project_urls,
+			t: control,
 		}
 		var exit = false
 		var confirm_overwrite = false

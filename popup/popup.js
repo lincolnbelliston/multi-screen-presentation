@@ -33,7 +33,7 @@ popup.populate = function(){
 	chrome.storage.sync.get('settings',function(obj){
 		popup.object = obj.settings;
 		$.each(popup.object,function(index,value){
-			prf = JSON.parse(value).profileName;
+			prf = JSON.parse(value).n;
 			$('#profiles').append('<option value="'+prf+'">'+prf+'</option>');
 		});
 	});
@@ -51,13 +51,13 @@ popup.launch = function(){
 	var w = screen.width;
 	var h = screen.height;
 
-	var left_0 = data.controlMonitorLocation[1];
-	var top_0 = data.controlMonitorLocation[0];
+	var left_0 = data.t[1];
+	var top_0 = data.t[0];
 
 	var windowsOpened = 0;
 
-	$(data.monitorLocationArray).each(function(index,value){
-		url_string = data.urlArray[index];
+	$(data.l).each(function(index,value){
+		url_string = data.u[index];
 		if(url_string == '') {
 			url_string = 'chrome://newtab';
 		} else if(!(/http/).test(url_string)){
@@ -78,8 +78,8 @@ popup.launch = function(){
 				popup.ids.push(newWindow.id);
 				chrome.windows.update(newWindow.id,{state:"fullscreen"});
 				windowsOpened ++;
-				if(windowsOpened == data.numberOfMonitors){
-					popup.storeIDs(popup.ids, data.numberOfMonitors);
+				if(windowsOpened == data.m){
+					popup.storeIDs(popup.ids, data.m);
 				}
 
 			}
