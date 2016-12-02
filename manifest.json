@@ -1,11 +1,11 @@
 {
 	"name": "Multi-Screen Presentation",
-	"version": "3.1",
+	"version": "3.1.1",
 	"manifest_version": 2,
 	"description": "Open a full screen presentation in multiple monitors.",
 	"browser_action": {
 		"default_icon":{
-		
+
 		},
 		"default_title": "Multi-Screen Presentation - click to open project",
 		"default_popup": "popup/popup.html"
@@ -32,5 +32,5 @@
 		"persistent": true,
 		"scripts": ["background.js","jquery-2.1.4.min.js"]
 	}
-	
+
 }
