@@ -1,6 +1,6 @@
 {
 	"name": "Multi-Screen Presentation",
-	"version": "3.1.1",
+	"version": "3.1.2",
 	"manifest_version": 2,
 	"description": "Open a full screen presentation in multiple monitors.",
 	"browser_action": {

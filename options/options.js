@@ -125,6 +125,10 @@ options.convertProfilesToNewNamingScheme = function() {
 				delete profileObject.controlMonitorLocation;
 			}
 
+			if(profileObject.save){
+				delete profileObject.save;
+			}
+
 			newObject[index] = JSON.stringify(profileObject);
 
 		});
@@ -376,6 +380,12 @@ options.save = function() {
 			chrome.storage.sync.get('settings',function(obj){
 				options.curr_profile = obj.settings;
 				options.curr_profile[name] = JSON.stringify(settings);
+				console.log(JSON.stringify(options.curr_profile).length);
+				if(JSON.stringify(options.curr_profile).length > 8190){
+					console.log('exceeded');
+					chrome.extension.getBackgroundPage().alert('Chrome storage allotment exceeded. Please delete one or more profiles before saving another.');
+					return;
+				}
 				chrome.storage.sync.set({
 					'settings':options.curr_profile
 				});
