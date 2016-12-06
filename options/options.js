@@ -44,7 +44,7 @@ $(document).ready(function(){
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
 	document.querySelector('#done').addEventListener('click',options.cancel);
-	//document.querySelector('#new-shortcut').addEventListener('click',options.addShortcut);
+	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
 
 	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button')
 	for (var i=0; i<editShorcutButtons.length; i++){
@@ -564,5 +564,47 @@ options.cancelEditShortcut = function() {
 }
 
 options.addShortcut = function(){
-	// insert code to handle adding a new shortcut here
+	options.appendShortcut(true,"");
+
+	// click on edit
+}
+
+options.appendShortcut = function(isNew, shortcutName){
+	$('#shortcut-list-display').append('<div></div>');
+
+	// load template into div
+	var addedShortcutContainer = $('#shortcut-list-display').children().last();
+	var addedShortcut = null;
+	addedShortcutContainer.load('shortcut.html',function(){
+		addedShortcut  = $(addedShortcutContainer).children()[0];
+
+		// add event listeners to buttons
+		var deleteButton = $(addedShortcut).find('button.delete-shortcut-button');
+		$(editButton).click(function(){
+				options.deleteShortcut();
+		}
+
+		var editButton = $(addedShortcut).find('button.edit-shortcut-button');
+		$(editButton).click(function(){
+			options.editShortcut(shortcutName);
+			// hide delete button
+		
+		})
+		editButton.click();
+
+
+		$(addedShortcut).find('button.edit-shortcut-button').click();
+	});
+
+	options.deleteShortcut = function(){
+		// dialog are you sure?
+		// remove shortcut panel from list
+	}
+
+
+
+	if(!isNew){
+		options.recoverShortcutSettings(shortcutName);
+	}
+	return null; // return shortcut div
 }
