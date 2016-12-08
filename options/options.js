@@ -18,7 +18,7 @@ $(document).ready(function(){
 	options.curr_profile = {};
 	options.currentShortcuts = {};
 
-    $('[data-toggle="tooltip"]').tooltip();
+  $('[data-toggle="tooltip"]').tooltip();
 	options.populate();
 
 	// set up listeners for page events
@@ -43,18 +43,8 @@ $(document).ready(function(){
 	document.querySelector('#back').addEventListener('click',options.back);
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
-	document.querySelector('#done').addEventListener('click',options.cancel);
-	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
 
-	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button')
-	for (var i=0; i<editShorcutButtons.length; i++){
-		editShorcutButtons[i].addEventListener('click', function(shortcutName){
-			options.editShortcut();
-		})
-	}
-
-
-
+	options.initializeShortcutPage();
 
 });
 
@@ -452,6 +442,25 @@ options.cancel = function() {
 /*////////////////////////////////////////////////////////////////
 Functions for shortcut settings menu
 */////////////////////////////////////////////////////////////////
+options.initializeShortcutPage = function(){
+	document.querySelector('#done').addEventListener('click',options.cancel);
+	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
+
+	// get list of shortcuts out of chrome storage
+	// for each shortcut in shortcuts {
+	// 			appendShortcut(false, shortcutName);
+	//	}
+
+	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button');
+	//var cancelShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
+	for (var i=0; i<editShorcutButtons.length; i++){
+		editShorcutButtons[i].addEventListener('click', function(shortcutName){
+			options.editShortcut(shortcutName, false);
+		});
+		
+	}
+}
+
 // When the "Shortcuts" button is clicked open shortcuts menu
 options.shortcuts = function(){
 	$('#main-menu').hide();
@@ -459,30 +468,44 @@ options.shortcuts = function(){
 }
 
 // load keyboad view and add event listeners to its components
-options.editShortcut = function(shortcutName){
+options.editShortcut = function(shortcutName, isNew){
 	$(event.target).hide();
 	$('.cancel-edit-shortcut').click();
 
+	$(event.target).parent().append("<button class='btn btn-default pull-right cancel-edit-shortcut'><span class='glyphicon glyphicon-remove'></span></button>")
+
 	var shortcutPanel  = 	$(event.target).closest('.shortcut-panel');
+
+	if($(shortcutPanel).hasClass('custom-shortcut')){
+		var shortcutTitle = $(shortcutPanel).find('.shortcut-title')
+		$(shortcutTitle).parent().append("<select class='shortcut-title form-control'></select>")
+		$(shortcutTitle).remove();
+		var shortcutSelect = $(shortcutPanel).find('.shortcut-title');
+		// populate <select>
+		$.each(options.profile_names,function(index,value){
+			$(shortcutSelect).append('<option value="'+value+'">'+value+'</option>');
+			$(shortcutSelect).val(shortcutName);
+		})
+
+	}
+
 	var shortcutName = shortcutPanel.attr('data-shortcutName');
+	// select on shortcutName
+
 	$(shortcutPanel).children().last().load('keyboard/keyboard.html',function(){
 		var keyboardRows = document.querySelectorAll('.keyboard-row');
 		for (var i=0; i<keyboardRows.length; i++){
 			keyboardRows[i].addEventListener('click', options.keyboardClick);
 		}
 
-		var saveEditShortcutButtons = document.querySelectorAll('.save-edit-shortcut');
-		var cancelEditShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
-		var clearEditShortcutButtons = document.querySelectorAll('.clear-edit-shortcut');
-		for (var i=0; i<saveEditShortcutButtons.length; i++){
-			saveEditShortcutButtons[i].addEventListener('click',options.saveEditShortcut);
-			cancelEditShortcutButtons[i].addEventListener('click',options.cancelEditShortcut);
-			clearEditShortcutButtons[i].addEventListener('click',options.clearEditShortcut);
+		document.querySelector('.save-edit-shortcut').addEventListener('click',options.saveEditShortcut);
+		document.querySelector('.cancel-edit-shortcut').addEventListener('click',options.cancelEditShortcut);
+		document.querySelector('.clear-edit-shortcut').addEventListener('click',options.clearEditShortcut);
+
+		if(!isNew){
+			options.recoverShortcutSettings(shortcutName);
 		}
-
-		options.recoverShortcutSettings(shortcutName);
 	});
-
 }
 
 options.recoverShortcutSettings = function(shortcutName) {
@@ -530,7 +553,15 @@ options.saveEditShortcut = function() {
 		}
 	}
 
-	var nameOfShortcutToSave = $(event.target).closest('.shortcut-panel').attr('data-shortcutName');
+	var shortcutPanel = $(event.target).closest('.shortcut-panel');
+
+	if($(shortcutPanel).hasClass('custom-shortcut')) {
+		//		update data-shortcutName with whatever is in the select menu
+		var shortcutName = $(shortcutPanel).find('select').val();
+		$(shortcutPanel).attr('data-shortcutName',shortcutName);
+	}
+
+	var nameOfShortcutToSave = shortcutPanel.attr('data-shortcutName');
 
 	var shortcutToSave = {
 		name: nameOfShortcutToSave,
@@ -547,6 +578,8 @@ options.saveEditShortcut = function() {
 		});
 	});
 
+
+
 	options.cancelEditShortcut();
 }
 
@@ -558,18 +591,34 @@ options.clearEditShortcut = function(){
 }
 
 options.cancelEditShortcut = function() {
-	$(event.target).closest('.shortcut-panel').find('.edit-shortcut-button').show();
-	$(event.target).closest('.keyboard-view').remove();
+	var shortcutPanel = $(event.target).closest('.shortcut-panel');
+	var shortcutName = $(shortcutPanel).attr('data-shortcutName');
+
+	if ($(shortcutPanel).hasClass('custom-shortcut')) {
+		// 	replace select with h5
+		var shortcutSelect = $(shortcutPanel).find('.shortcut-title')
+		$(shortcutSelect).parent().append("<h5 class='shortcut-title'>"+shortcutName+"</h5>")
+		$(shortcutSelect).remove();
+
+	}
+
+	$(shortcutPanel).find('.edit-shortcut-button').show();
+	$(shortcutPanel).find('.keyboard-view').remove();
+	$(shortcutPanel).find('.cancel-edit-shortcut').remove();
+	//$(event.target).remove();
+
 
 }
 
 options.addShortcut = function(){
-	options.appendShortcut(true,"");
+	options.appendShortcut(true,"",function(){
+		$('button.edit-shortcut-button:last')[0].click()
+	});
 
 	// click on edit
 }
 
-options.appendShortcut = function(isNew, shortcutName){
+options.appendShortcut = function(isNew, shortcutName, callBack){
 	$('#shortcut-list-display').append('<div></div>');
 
 	// load template into div
@@ -580,31 +629,26 @@ options.appendShortcut = function(isNew, shortcutName){
 
 		// add event listeners to buttons
 		var deleteButton = $(addedShortcut).find('button.delete-shortcut-button');
-		$(editButton).click(function(){
+		$(deleteButton).click(function(){
 				options.deleteShortcut();
-		}
+		});
 
 		var editButton = $(addedShortcut).find('button.edit-shortcut-button');
 		$(editButton).click(function(){
-			options.editShortcut(shortcutName);
-			// hide delete button
-		
+			options.editShortcut(shortcutName,true);
 		})
-		editButton.click();
 
-
-		$(addedShortcut).find('button.edit-shortcut-button').click();
+		callBack();
 	});
-
-	options.deleteShortcut = function(){
-		// dialog are you sure?
-		// remove shortcut panel from list
-	}
-
-
 
 	if(!isNew){
 		options.recoverShortcutSettings(shortcutName);
 	}
+
 	return null; // return shortcut div
+}
+
+options.deleteShortcut = function() {
+	// dialog are you sure?
+	// remove shortcut panel from list
 }
