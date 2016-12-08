@@ -17,6 +17,7 @@ $(document).ready(function(){
 	options.locations = [];
 	options.curr_profile = {};
 	options.currentShortcuts = {};
+	options.customShortcutNames = [];
 
   $('[data-toggle="tooltip"]').tooltip();
 	options.populate();
@@ -446,18 +447,15 @@ options.initializeShortcutPage = function(){
 	document.querySelector('#done').addEventListener('click',options.cancel);
 	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
 
-	// get list of shortcuts out of chrome storage
-	// for each shortcut in shortcuts {
-	// 			appendShortcut(false, shortcutName);
-	//	}
+	options.retrieveShortcutList();
 
 	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button');
 	//var cancelShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
 	for (var i=0; i<editShorcutButtons.length; i++){
 		editShorcutButtons[i].addEventListener('click', function(shortcutName){
-			options.editShortcut(shortcutName, false);
+			options.editShortcut(false);
 		});
-		
+
 	}
 }
 
@@ -467,14 +465,25 @@ options.shortcuts = function(){
 	$('#shortcuts').show();
 }
 
+options.retrieveShortcutList = function(){
+
+	chrome.storage.sync.get('custom',function(obj){
+		options.customShortcutNames = obj.custom;
+		$.each(options.customShortcutNames,function(index,value){
+			options.appendShortcut(false, value, function(){});
+		});
+	});
+}
+
 // load keyboad view and add event listeners to its components
-options.editShortcut = function(shortcutName, isNew){
+options.editShortcut = function(isNew){
 	$(event.target).hide();
 	$('.cancel-edit-shortcut').click();
 
 	$(event.target).parent().append("<button class='btn btn-default pull-right cancel-edit-shortcut'><span class='glyphicon glyphicon-remove'></span></button>")
 
 	var shortcutPanel  = 	$(event.target).closest('.shortcut-panel');
+	var shortcutName = $(shortcutPanel).attr('data-shortcutName');
 
 	if($(shortcutPanel).hasClass('custom-shortcut')){
 		var shortcutTitle = $(shortcutPanel).find('.shortcut-title')
@@ -484,8 +493,10 @@ options.editShortcut = function(shortcutName, isNew){
 		// populate <select>
 		$.each(options.profile_names,function(index,value){
 			$(shortcutSelect).append('<option value="'+value+'">'+value+'</option>');
-			$(shortcutSelect).val(shortcutName);
+
 		})
+		console.log(shortcutName);
+		$(shortcutSelect).val(shortcutName);
 
 	}
 
@@ -559,6 +570,18 @@ options.saveEditShortcut = function() {
 		//		update data-shortcutName with whatever is in the select menu
 		var shortcutName = $(shortcutPanel).find('select').val();
 		$(shortcutPanel).attr('data-shortcutName',shortcutName);
+
+		// add shortcutName to added-shortcut array in storage
+		chrome.storage.sync.get('custom',function(obj){
+			if(obj.custom){
+				options.customShortcutNames = obj.custom;
+			}
+			options.customShortcutNames.push(shortcutName);
+			chrome.storage.sync.set(
+			{
+					'custom':options.customShortcutNames
+			});
+		})
 	}
 
 	var nameOfShortcutToSave = shortcutPanel.attr('data-shortcutName');
@@ -626,7 +649,8 @@ options.appendShortcut = function(isNew, shortcutName, callBack){
 	var addedShortcut = null;
 	addedShortcutContainer.load('shortcut.html',function(){
 		addedShortcut  = $(addedShortcutContainer).children()[0];
-
+		$(addedShortcut).attr('data-shortcutName',shortcutName);
+		$(addedShortcut).find('h5').text(shortcutName);
 		// add event listeners to buttons
 		var deleteButton = $(addedShortcut).find('button.delete-shortcut-button');
 		$(deleteButton).click(function(){
@@ -635,7 +659,7 @@ options.appendShortcut = function(isNew, shortcutName, callBack){
 
 		var editButton = $(addedShortcut).find('button.edit-shortcut-button');
 		$(editButton).click(function(){
-			options.editShortcut(shortcutName,true);
+			options.editShortcut(true);
 		})
 
 		callBack();
