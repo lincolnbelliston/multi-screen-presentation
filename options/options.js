@@ -371,9 +371,7 @@ options.save = function() {
 			chrome.storage.sync.get('settings',function(obj){
 				options.curr_profile = obj.settings;
 				options.curr_profile[name] = JSON.stringify(settings);
-				console.log(JSON.stringify(options.curr_profile).length);
 				if(JSON.stringify(options.curr_profile).length > 8190){
-					console.log('exceeded');
 					chrome.extension.getBackgroundPage().alert('Chrome storage allotment exceeded. Please delete one or more profiles before saving another.');
 					return;
 				}
@@ -447,16 +445,21 @@ options.initializeShortcutPage = function(){
 	document.querySelector('#done').addEventListener('click',options.cancel);
 	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
 
-	options.retrieveShortcutList();
+	options.retrieveShortcutList(function(){
 
-	var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button');
-	//var cancelShortcutButtons = document.querySelectorAll('.cancel-edit-shortcut');
-	for (var i=0; i<editShorcutButtons.length; i++){
-		editShorcutButtons[i].addEventListener('click', function(shortcutName){
-			options.editShortcut(false);
-		});
+		var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button');
+		var deleteShortcutButtons = document.querySelectorAll('.delete-shortcut-button');
 
-	}
+		for (var i=0; i<editShorcutButtons.length; i++){
+			editShorcutButtons[i].addEventListener('click', function(){
+				options.editShortcut(false);
+				
+			});
+			if(i>1){
+				deleteShortcutButtons[i-2].addEventListener('click', options.deleteShortcut);
+			}
+		}
+	});
 }
 
 // When the "Shortcuts" button is clicked open shortcuts menu
@@ -465,18 +468,26 @@ options.shortcuts = function(){
 	$('#shortcuts').show();
 }
 
-options.retrieveShortcutList = function(){
+options.retrieveShortcutList = function(callBack){
 
 	chrome.storage.sync.get('custom',function(obj){
 		options.customShortcutNames = obj.custom;
+		var i = 0
 		$.each(options.customShortcutNames,function(index,value){
-			options.appendShortcut(false, value, function(){});
+			if (i<options.customShortcutNames.length-1)	{
+				var callBackToCallOnce = function(){};
+			} else {
+				var callBackToCallOnce = callBack;
+			}
+			options.appendShortcut(false, value, callBackToCallOnce);
+			i++
 		});
 	});
 }
 
 // load keyboad view and add event listeners to its components
 options.editShortcut = function(isNew){
+	console.log('hello');
 	$(event.target).hide();
 	$('.cancel-edit-shortcut').click();
 
@@ -492,10 +503,10 @@ options.editShortcut = function(isNew){
 		var shortcutSelect = $(shortcutPanel).find('.shortcut-title');
 		// populate <select>
 		$.each(options.profile_names,function(index,value){
-			$(shortcutSelect).append('<option value="'+value+'">'+value+'</option>');
-
+			if(!options.customShortcutNames.find(function(name){return value == name}) || (value == shortcutName)){
+				$(shortcutSelect).append('<option value="'+value+'">'+value+'</option>');
+			}
 		})
-		console.log(shortcutName);
 		$(shortcutSelect).val(shortcutName);
 
 	}
@@ -532,7 +543,6 @@ options.recoverShortcutSettings = function(shortcutName) {
 options.displayShortcutSettings = function(shortcutName, shortcutCondition) {
 
 	var keyboardView = $('div[data-shortcutName='+shortcutName+']').find('.keyboard-view');
-
 	for (var i=0; i<shortcutCondition.length; i++){
 		$(keyboardView).find('td[data-keyvalue='+shortcutCondition[i]+']').attr('bold','true');
 	};
@@ -555,6 +565,7 @@ options.keyboardClick = function(event){
 options.saveEditShortcut = function() {
 	// store settings in chrome.storage.sync
 
+	var saveEvent = event
 	var keyboardElements = $('td.keyboard-element');
 	var selectedKeys = [];
 	for (var i=0; i<keyboardElements.length; i++){
@@ -571,12 +582,22 @@ options.saveEditShortcut = function() {
 		var shortcutName = $(shortcutPanel).find('select').val();
 		$(shortcutPanel).attr('data-shortcutName',shortcutName);
 
+
 		// add shortcutName to added-shortcut array in storage
 		chrome.storage.sync.get('custom',function(obj){
 			if(obj.custom){
 				options.customShortcutNames = obj.custom;
 			}
-			options.customShortcutNames.push(shortcutName);
+			if(!options.customShortcutNames.find(function(name){return name == shortcutName})){
+				options.customShortcutNames.push(shortcutName);
+
+				var editButton = $(shortcutPanel).find('button.edit-shortcut-button');
+				$(editButton).unbind('click');
+				$(editButton).click(function(){
+					options.editShortcut(false);
+				})
+
+			}
 			chrome.storage.sync.set(
 			{
 					'custom':options.customShortcutNames
@@ -599,11 +620,10 @@ options.saveEditShortcut = function() {
 		{
 			'shortcuts': options.currentShortcuts
 		});
+
+		options.cancelEditShortcut(saveEvent);
 	});
 
-
-
-	options.cancelEditShortcut();
 }
 
 options.clearEditShortcut = function(){
@@ -613,7 +633,7 @@ options.clearEditShortcut = function(){
 	}
 }
 
-options.cancelEditShortcut = function() {
+options.cancelEditShortcut = function(event) {
 	var shortcutPanel = $(event.target).closest('.shortcut-panel');
 	var shortcutName = $(shortcutPanel).attr('data-shortcutName');
 
@@ -623,12 +643,16 @@ options.cancelEditShortcut = function() {
 		$(shortcutSelect).parent().append("<h5 class='shortcut-title'>"+shortcutName+"</h5>")
 		$(shortcutSelect).remove();
 
+		if(!options.customShortcutNames.find(function(name){return shortcutName == name})){
+			$(shortcutPanel).parent().remove();
+		}
+
 	}
 
 	$(shortcutPanel).find('.edit-shortcut-button').show();
 	$(shortcutPanel).find('.keyboard-view').remove();
 	$(shortcutPanel).find('.cancel-edit-shortcut').remove();
-	//$(event.target).remove();
+
 
 
 }
@@ -638,7 +662,6 @@ options.addShortcut = function(){
 		$('button.edit-shortcut-button:last')[0].click()
 	});
 
-	// click on edit
 }
 
 options.appendShortcut = function(isNew, shortcutName, callBack){
@@ -651,28 +674,51 @@ options.appendShortcut = function(isNew, shortcutName, callBack){
 		addedShortcut  = $(addedShortcutContainer).children()[0];
 		$(addedShortcut).attr('data-shortcutName',shortcutName);
 		$(addedShortcut).find('h5').text(shortcutName);
+
 		// add event listeners to buttons
 		var deleteButton = $(addedShortcut).find('button.delete-shortcut-button');
 		$(deleteButton).click(function(){
 				options.deleteShortcut();
 		});
 
+	if (isNew){
 		var editButton = $(addedShortcut).find('button.edit-shortcut-button');
 		$(editButton).click(function(){
 			options.editShortcut(true);
 		})
+	}
 
 		callBack();
 	});
 
-	if(!isNew){
-		options.recoverShortcutSettings(shortcutName);
-	}
-
-	return null; // return shortcut div
 }
 
 options.deleteShortcut = function() {
+	shortcutPanel = $(event.target).closest('.shortcut-panel');
+	shortcutName = $(shortcutPanel).attr('data-shortcutName');
 	// dialog are you sure?
-	// remove shortcut panel from list
+
+	chrome.storage.sync.get('shortcuts',function(obj){
+		newObject = obj.shortcuts;
+		delete newObject[shortcutName];
+		chrome.storage.sync.set({
+			'shortcuts': newObject
+		})
+	});
+
+	chrome.storage.sync.get('custom',function(obj){
+		newArray = obj.custom;
+		$.each(newArray, function(index,value){
+			if (value == shortcutName) {
+				newArray.splice(index, index + 1);
+				return
+			}
+		});
+		chrome.storage.sync.set({
+			'custom':newArray
+		});
+		options.customShortcutNames = newArray;
+	})
+
+	$(shortcutPanel).parent().remove();
 }
