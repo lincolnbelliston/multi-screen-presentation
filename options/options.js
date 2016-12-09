@@ -151,6 +151,8 @@ options.edit = function(profileName,isnew) {
 			$('#monNum').val(object.m);
 			$('#row').val(object.r);
 			$('#col').val(object.c);
+			console.log($('#col').val())
+	// something is going on here. It seems like gridY is firing before ('#col').val is firing
 			options.gridY();
 			options.gridX();
 			$(object.l).each(function(index,value){
@@ -219,6 +221,7 @@ options.gridY = function(){
 }
 
 options.gridX = function(){
+	console.log('hello')
 	var c = options.c
 	var r = options.r
 
@@ -453,7 +456,7 @@ options.initializeShortcutPage = function(){
 		for (var i=0; i<editShorcutButtons.length; i++){
 			editShorcutButtons[i].addEventListener('click', function(){
 				options.editShortcut(false);
-				
+
 			});
 			if(i>1){
 				deleteShortcutButtons[i-2].addEventListener('click', options.deleteShortcut);

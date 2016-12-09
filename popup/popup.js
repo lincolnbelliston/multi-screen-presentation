@@ -78,7 +78,9 @@ popup.launch = function(){
 				popup.ids.push(newWindow.id);
 				chrome.windows.update(newWindow.id,{state:"fullscreen"});
 				windowsOpened ++;
+				console.log('one');
 				if(windowsOpened == data.m){
+					console.log('two');
 					popup.storeIDs(popup.ids, data.m);
 				}
 
@@ -93,6 +95,7 @@ popup.launch = function(){
 
 
 popup.storeIDs = function(ids, lastLaunch){
+	console.log('storIDS');
 	popup.lastLaunchArray.push(parseInt(lastLaunch));
 	chrome.runtime.sendMessage({
 		msg: "storeIDs",
