@@ -1,4 +1,6 @@
 var background = {};
+background.object = {};
+background.ids = [];
 // listening for message events from content script
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	var msg = message.msg
@@ -16,12 +18,82 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			background.closeLast();
 			break
 
+		case("launch"):
+			background.launch(message.profileData);
+
 		default:
 			console.log("Unknown message recieved");
 	}
 
 })
 
+
+
+background.launch = function(profileData){
+	background.getIDs();
+
+	profileName = profileData.n
+
+	var w = screen.width;
+	var h = screen.height;
+
+	var left_0 = profileData.t[1];
+	var top_0 = profileData.t[0];
+
+	var windowsOpened = 0;
+
+	$(profileData.l).each(function(index,value){
+		url_string = profileData.u[index];
+		if(url_string == '') {
+			url_string = 'chrome://newtab';
+		} else if(!(/http/).test(url_string)){
+			url_string = 'https://' + url_string;
+		}
+
+		var left_x = value[1];
+		var top_y = value[0];
+
+		var x = Math.round(Number(w*(left_x - left_0)));
+		if(x == -0){left = 0};
+		var y = Math.round(Number(h*(top_y - top_0)));
+		if(y == -0){y = 0}
+
+
+		chrome.windows.create({url: url_string,left:x,top:y,focused:false},
+			function(newWindow){
+				background.ids.push(newWindow.id);
+				chrome.windows.update(newWindow.id,{state:"fullscreen"});
+				windowsOpened ++;
+				console.log('one');
+				if(windowsOpened == profileData.m){
+					console.log('two');
+					background.storeIDs(background.ids, profileData.m);
+				}
+
+			}
+		)
+
+
+	});
+}
+
+background.getIDs = function(){
+	chrome.storage.sync.get('kill',function(obj){
+		if(obj.kill){
+			background.ids = obj.kill
+		} else {
+			background.ids = [];
+		}
+	})
+
+	chrome.storage.sync	.get('lastLaunch',function(obj){
+		if(obj.lastLaunch){
+			background.lastLaunchArray = obj.lastLaunch;
+		} else {
+			background.lastLaunchArray = [];
+		}
+	})
+}
 
 // as windows are opened, save window ids to an array
 background.storeIDs = function(ids, lastLaunch){

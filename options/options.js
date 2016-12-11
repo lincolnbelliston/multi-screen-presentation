@@ -4,7 +4,8 @@ Logic for options page.
 
 var options = {};
 $(document).ready(function(){
-	//chrome.storage.sync.clear();
+	 //chrome.storage.sync.clear();
+	 //return
 	options.convertProfilesToNewNamingScheme();
 
 	$('#profile-settings').hide();
@@ -52,80 +53,82 @@ $(document).ready(function(){
 // update naming scheme if data was saved using old version
 options.convertProfilesToNewNamingScheme = function() {
 	chrome.storage.sync.get('settings',function(obj){
-		var newObject = obj.settings;
-		$.each(obj.settings,function(index,value){
-			profileObject = JSON.parse(value)
+			if(obj.settings){
+			var newObject = obj.settings;
+			$.each(obj.settings,function(index,value){
+				profileObject = JSON.parse(value)
 
-			if(profileObject.name){
-				profileObject.n = profileObject.name;
-				delete profileObject.name;
-			}
+				if(profileObject.name){
+					profileObject.n = profileObject.name;
+					delete profileObject.name;
+				}
 
-			if(profileObject.profileName){
-				profileObject.n = profileObject.profileName;
-				delete profileObject.profileName;
-			}
+				if(profileObject.profileName){
+					profileObject.n = profileObject.profileName;
+					delete profileObject.profileName;
+				}
 
-			if(profileObject.loc){
-				profileObject.l = profileObject.loc;
-				delete profileObject.loc;
-			}
+				if(profileObject.loc){
+					profileObject.l = profileObject.loc;
+					delete profileObject.loc;
+				}
 
-			if(profileObject.monitorLocationArray) {
-				profileObject.l = profileObject.monitorLocationArray;
-				delete profileObject.monitorLocationArray;
-			}
+				if(profileObject.monitorLocationArray) {
+					profileObject.l = profileObject.monitorLocationArray;
+					delete profileObject.monitorLocationArray;
+				}
 
-			if(profileObject.gridRows){
-				profileObject.r = profileObject.gridRows;
-				delete profileObject.gridRows;
-			}
+				if(profileObject.gridRows){
+					profileObject.r = profileObject.gridRows;
+					delete profileObject.gridRows;
+				}
 
-			if(profileObject.gridColumns){
-				profileObject.c = profileObject.gridColumns;
-				delete profileObject.gridColumns;
-			}
+				if(profileObject.gridColumns){
+					profileObject.c = profileObject.gridColumns;
+					delete profileObject.gridColumns;
+				}
 
-			if(profileObject.mon){
-				profileObject.m = profileObject.mon;
-				delete profileObject.mon;
-			}
+				if(profileObject.mon){
+					profileObject.m = profileObject.mon;
+					delete profileObject.mon;
+				}
 
-			if(profileObject.numberOfMonitors) {
-				profileObject.m = profileObject.numberOfMonitors;
-				delete profileObject.numberOfMonitors;
-			}
+				if(profileObject.numberOfMonitors) {
+					profileObject.m = profileObject.numberOfMonitors;
+					delete profileObject.numberOfMonitors;
+				}
 
-			if(profileObject.url){
-				profileObject.u = profileObject.url;
-				delete profileObject.url;
-			}
+				if(profileObject.url){
+					profileObject.u = profileObject.url;
+					delete profileObject.url;
+				}
 
-			if(profileObject.urlArray){
-				profileObject.u = profileObject.urlArray;
-				delete profileObject.urlArray;
-			}
+				if(profileObject.urlArray){
+					profileObject.u = profileObject.urlArray;
+					delete profileObject.urlArray;
+				}
 
-			if(profileObject.ctl){
-				profileObject.controlMonitorLocation = profileObject.ctl;
-				delete profileObject.ctl;
-			}
+				if(profileObject.ctl){
+					profileObject.controlMonitorLocation = profileObject.ctl;
+					delete profileObject.ctl;
+				}
 
-			if(profileObject.controlMonitorLocation) {
-				profileObject.t = profileObject.controlMonitorLocation;
-				delete profileObject.controlMonitorLocation;
-			}
+				if(profileObject.controlMonitorLocation) {
+					profileObject.t = profileObject.controlMonitorLocation;
+					delete profileObject.controlMonitorLocation;
+				}
 
-			if(profileObject.save){
-				delete profileObject.save;
-			}
+				if(profileObject.save){
+					delete profileObject.save;
+				}
 
-			newObject[index] = JSON.stringify(profileObject);
+				newObject[index] = JSON.stringify(profileObject);
 
-		});
-		chrome.storage.sync.set({
-				'settings':newObject
-		})
+			});
+			chrome.storage.sync.set({
+					'settings':newObject
+			})
+		}
 	});
 }
 
@@ -151,8 +154,6 @@ options.edit = function(profileName,isnew) {
 			$('#monNum').val(object.m);
 			$('#row').val(object.r);
 			$('#col').val(object.c);
-			console.log($('#col').val())
-	// something is going on here. It seems like gridY is firing before ('#col').val is firing
 			options.gridY();
 			options.gridX();
 			$(object.l).each(function(index,value){
@@ -180,7 +181,7 @@ options.populate = function(){
 		options.object = obj.settings;
 		if (options.object == undefined){
 			chrome.storage.sync.set({
-				'settings':'{}'
+				'settings':{}
 			});
 		} else {
 		$.each(options.object,function(index,value){
@@ -196,10 +197,10 @@ options.populate = function(){
 // update the monitor grid display when row/column controls change
 options.gridY = function(){
 
-	var r = options.r
+	var r = options.gridRows;
 
 	var rowStr = "";
-	for(var k=0; k<options.c; k++){
+	for(var k=0; k<options.gridColumns; k++){
 		rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+r+' data-col='+k+'></td>');
 	}
 
@@ -216,15 +217,13 @@ options.gridY = function(){
 			r = --r;
 		}
 	}
-	options.r = row;
+	options.gridRows = row;
 
 }
 
 options.gridX = function(){
-	console.log('hello')
-	var c = options.c
-	var r = options.r
-
+	var c = options.gridColumns;
+	var r = options.gridRows;
 	var col = Number(document.getElementById('col').value);
 	if (col>c){
 		for (var j=c; j<col; j++){
@@ -240,7 +239,7 @@ options.gridX = function(){
 			})
 		}
 	}
-	options.c = col;
+	options.gridColumns = col;
 
 }
 
@@ -449,10 +448,10 @@ options.initializeShortcutPage = function(){
 	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
 
 	options.retrieveShortcutList(function(){
-
+		console.log('hello');
 		var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button');
 		var deleteShortcutButtons = document.querySelectorAll('.delete-shortcut-button');
-
+		console.log(editShorcutButtons);
 		for (var i=0; i<editShorcutButtons.length; i++){
 			editShorcutButtons[i].addEventListener('click', function(){
 				options.editShortcut(false);
@@ -472,25 +471,37 @@ options.shortcuts = function(){
 }
 
 options.retrieveShortcutList = function(callBack){
-
+	console.log('one');
 	chrome.storage.sync.get('custom',function(obj){
+		console.log('two');
 		options.customShortcutNames = obj.custom;
 		var i = 0
-		$.each(options.customShortcutNames,function(index,value){
-			if (i<options.customShortcutNames.length-1)	{
-				var callBackToCallOnce = function(){};
+		if(options.customShortcutNames){
+			if(options.customShortcutNames.length == 0){
+				console.log('three');
+				callBack();
 			} else {
-				var callBackToCallOnce = callBack;
+				$.each(options.customShortcutNames,function(index,value){
+					if (i<options.customShortcutNames.length-1)	{
+						var callbackToCallOnce = function(){};
+					} else {
+						var callbackToCallOnce = callBack;
+					}
+					options.appendShortcut(false, value, callbackToCallOnce);
+					i++
+				});
 			}
-			options.appendShortcut(false, value, callBackToCallOnce);
-			i++
-		});
+		} else {
+			chrome.storage.sync.set({
+				'custom':[]
+			});
+			callBack();
+		}
 	});
 }
 
 // load keyboad view and add event listeners to its components
 options.editShortcut = function(isNew){
-	console.log('hello');
 	$(event.target).hide();
 	$('.cancel-edit-shortcut').click();
 
