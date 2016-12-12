@@ -52,9 +52,8 @@ content.checkShortcuts = function() {
 
 		shortcut = content.shortcuts[key];
 		if(content.checkShortcutCondition(shortcut)){
-			console.log(shortcut.name);
 			chrome.runtime.sendMessage({msg: shortcut.name})
-
+//figure out how to launch a profile from here
 		}
 	}
 }
