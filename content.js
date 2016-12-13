@@ -11,6 +11,10 @@ $(document).ready(function(){
 	document.onkeydown = content.handleKeyDown;
 	document.onkeyup = content.handleKeyUp;
 
+	window.addEventListener('focus', function(event){
+		content.setAllKeysToFalse()
+	})
+
 	// get array of keyboard shortcuts from chrome.storage.sync
 	chrome.storage.sync.get('shortcuts',function(obj){
 		content.shortcuts = obj.shortcuts;
@@ -49,11 +53,10 @@ content.handleKeyUp = function(e) {
 
 content.checkShortcuts = function() {
 	for (var key in content.shortcuts){
-
 		shortcut = content.shortcuts[key];
+
 		if(content.checkShortcutCondition(shortcut)){
 			chrome.runtime.sendMessage({msg: shortcut.name})
-//figure out how to launch a profile from here
 		}
 	}
 }
@@ -71,6 +74,12 @@ content.checkShortcutCondition = function(shortcut) {
 	}
 
 	return conditionMet;
+}
+
+content.setAllKeysToFalse = function(){
+	for(var key in content.keycodes){
+		content.keycodes[key].pressed = false;
+	}
 }
 
 content.keycodes = {

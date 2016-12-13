@@ -1,15 +1,13 @@
 var background = {};
 background.object = {};
 background.ids = [];
+background.lastLaunchArray = [];
+
 // listening for message events from content script
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	var msg = message.msg
 
 	switch(msg){
-		case("storeIDs"):
-			background.storeIDs(message.ids, message.lastLaunch);
-			break;
-
 		case("closeAll"):
 			background.closeAll();
 			break;
@@ -19,24 +17,28 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			break
 
 		case("launch"):
-			background.launch(message.profileData);
+			background.launch(JSON.parse(message.profileData));
+			break
 
 		default:
-			console.log("Unknown message recieved");
+			background.accessProfileToLaunch(msg);
 	}
 
 })
 
 
+background.accessProfileToLaunch = function(profileName) {
+	chrome.storage.sync.get('settings', function(obj){
+		var profileData = JSON.parse(obj.settings[profileName]);
+		background.launch(profileData);
+	})
+}
 
 background.launch = function(profileData){
 	background.getIDs();
-
 	profileName = profileData.n
-
 	var w = screen.width;
 	var h = screen.height;
-
 	var left_0 = profileData.t[1];
 	var top_0 = profileData.t[0];
 
@@ -64,9 +66,8 @@ background.launch = function(profileData){
 				background.ids.push(newWindow.id);
 				chrome.windows.update(newWindow.id,{state:"fullscreen"});
 				windowsOpened ++;
-				console.log('one');
 				if(windowsOpened == profileData.m){
-					console.log('two');
+					background.lastLaunchArray.push(profileData.m);
 					background.storeIDs(background.ids, profileData.m);
 				}
 
@@ -93,16 +94,15 @@ background.getIDs = function(){
 			background.lastLaunchArray = [];
 		}
 	})
+
 }
 
 // as windows are opened, save window ids to an array
 background.storeIDs = function(ids, lastLaunch){
-	background.ids = ids;
-	background.lastLaunch = lastLaunch;
 	chrome.storage.sync.set(
 	{
 		'kill': background.ids,
-		'lastLaunch': background.lastLaunch
+		'lastLaunch': background.lastLaunchArray
 	})
 }
 
@@ -121,7 +121,7 @@ background.closeLast = function(){
 	chrome.storage.sync.get('kill',function(obj){
 		background.ids = obj.kill;
 		chrome.storage.sync.get('lastLaunch',function(obj){
-			background.lastLaunch = obj.lastLaunch;
+			background.lastLaunchArray = obj.lastLaunch;
 			background.killLast();
 
 		})
@@ -142,13 +142,13 @@ background.kill = function(){
 	});
 
 	background.ids = [];
-	background.lastLaunch = [];
-	background.storeIDs(background.ids, background.lastLaunch);
+	background.lastLaunchArray = [];
+	background.storeIDs(background.ids, background.lastLaunchArray);
 
 }
 
 background.killLast = function(){
-	var k = background.lastLaunch.pop();
+	var k = background.lastLaunchArray.pop();
 	var n = background.ids.length;
 
 
@@ -163,7 +163,7 @@ background.killLast = function(){
 		background.ids.pop();
 
 		if(i == n-k){
-			background.storeIDs(background.ids, background.lastLaunch);
+			background.storeIDs(background.ids, background.lastLaunchArray);
 		}
 	}
 

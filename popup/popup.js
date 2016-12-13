@@ -43,19 +43,12 @@ popup.launch = function(){
 	profileName = $('#profiles').val();
 	chrome.runtime.sendMessage({
 		msg: 'launch',
-		profileData: JSON.parse(popup.object[profileName])
+		profileData: popup.object[profileName]
+
 	})
 }
 
 
-popup.storeIDs = function(ids, lastLaunch){
-	popup.lastLaunchArray.push(parseInt(lastLaunch));
-	chrome.runtime.sendMessage({
-		msg: "storeIDs",
-		ids: ids,
-		lastLaunch: popup.lastLaunchArray
-	});
-}
 
 popup.getIDs = function(){
 	chrome.storage.sync.get('kill',function(obj){
