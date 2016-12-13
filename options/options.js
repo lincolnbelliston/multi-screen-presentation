@@ -295,7 +295,7 @@ options.help = function(){
 
 // add url fields when # of Monitors is changed (this could be set by # of browsers later on)
 options.urlField = function() {
-	var i = options.m
+	var i = options.numberOfMonitors
 	var monitors = Number(document.getElementById('monNum').value);
 	if (monitors>i){
 		for (var j=i; j<monitors; j++){
@@ -382,6 +382,7 @@ options.save = function() {
 				});
 			});
 
+			options.profile_names.push(name);
 			$('#profile-settings').hide();
 			$('#main-menu').show();
 			$('#edit').val('none');
@@ -409,8 +410,8 @@ options.refresh = function() {
 // delete profile. Since profile is deleted by accessing the name, if two items on the list have the same name, both will be deleted
 options.deleteProfile = function() {
 
-		//var del = chrome.extension.getBackgroundPage().confirm('Are you sure you want to delete this profile?');
-		//if(del){
+		var del = chrome.extension.getBackgroundPage().confirm('Are you sure you want to delete this profile?');
+		if(del){
 			var toDelete = $('#name').val();
 			chrome.storage.sync.get('settings',function(obj){
 				newObject = obj.settings;
@@ -421,7 +422,7 @@ options.deleteProfile = function() {
 				})
 				options.cancel()
 			});
-		//};
+		};
 
 }
 
@@ -448,10 +449,8 @@ options.initializeShortcutPage = function(){
 	document.querySelector('#add-new-shortcut').addEventListener('click',options.addShortcut);
 
 	options.retrieveShortcutList(function(){
-		console.log('hello');
 		var editShorcutButtons = document.querySelectorAll('.edit-shortcut-button');
 		var deleteShortcutButtons = document.querySelectorAll('.delete-shortcut-button');
-		console.log(editShorcutButtons);
 		for (var i=0; i<editShorcutButtons.length; i++){
 			editShorcutButtons[i].addEventListener('click', function(){
 				options.editShortcut(false);
@@ -471,14 +470,11 @@ options.shortcuts = function(){
 }
 
 options.retrieveShortcutList = function(callBack){
-	console.log('one');
 	chrome.storage.sync.get('custom',function(obj){
-		console.log('two');
 		options.customShortcutNames = obj.custom;
 		var i = 0
 		if(options.customShortcutNames){
 			if(options.customShortcutNames.length == 0){
-				console.log('three');
 				callBack();
 			} else {
 				$.each(options.customShortcutNames,function(index,value){
@@ -547,8 +543,10 @@ options.editShortcut = function(isNew){
 options.recoverShortcutSettings = function(shortcutName) {
 	chrome.storage.sync.get('shortcuts',function(obj){
 		if(obj.shortcuts){
-			var shortcutCondition = obj.shortcuts[shortcutName].condition;
-			options.displayShortcutSettings(shortcutName, shortcutCondition);
+			if(obj.shortcuts[shortcutName]){
+				var shortcutCondition = obj.shortcuts[shortcutName].condition;
+				options.displayShortcutSettings(shortcutName, shortcutCondition);
+			}
 		}
 	})
 
