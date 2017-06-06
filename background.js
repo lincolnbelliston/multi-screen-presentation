@@ -20,6 +20,10 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			background.launch(JSON.parse(message.profileData));
 			break
 
+		case("init"):
+			background.getIDs();
+			break
+
 		default:
 			background.accessProfileToLaunch(msg);
 	}
@@ -35,7 +39,7 @@ background.accessProfileToLaunch = function(profileName) {
 }
 
 background.launch = function(profileData){
-	background.getIDs();
+
 	profileName = profileData.n
 	var w = screen.width;
 	var h = screen.height;

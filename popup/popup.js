@@ -23,7 +23,7 @@ $(document).ready(function(){
 
 	popup.getIDs();
 
-
+	chrome.runtime.sendMessage({msg: "init"});
 });
 
 
