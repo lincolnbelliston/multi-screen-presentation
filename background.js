@@ -45,7 +45,7 @@ background.launch = function(profileData){
 	var windowsOpened = 0;
 
 	$(profileData.l).each(function(index,value){
-		url_string = profileData.u[index];
+		var url_string = profileData.u[index];
 		if(url_string == '') {
 			url_string = 'chrome://newtab';
 		} else if(!(/http/).test(url_string)){
@@ -71,10 +71,13 @@ background.launch = function(profileData){
 					background.storeIDs(background.ids, profileData.m);
 				}
 
+				//Close a blank window to keep screen clear
+				if(url_string == 'chrome://newtab')
+				{
+					chrome.windows.remove(newWindow.id);
+				}
 			}
 		)
-
-
 	});
 }
 
