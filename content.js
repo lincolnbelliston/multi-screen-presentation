@@ -22,7 +22,6 @@ $(document).ready(function(){
 
 });
 
-
 var content = {};
 
 content.handleKeyDown = function(e) {
@@ -36,9 +35,7 @@ content.handleKeyDown = function(e) {
 		key.pressed = true;
 
 		content.checkShortcuts();
-
 	};
-
 }
 
 content.handleKeyUp = function(e) {
@@ -72,7 +69,6 @@ content.checkShortcutCondition = function(shortcut) {
 			return conditionMet;
 		}
 	}
-
 	return conditionMet;
 }
 

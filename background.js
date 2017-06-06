@@ -101,7 +101,6 @@ background.getIDs = function(){
 			background.lastLaunchArray = [];
 		}
 	})
-
 }
 
 // as windows are opened, save window ids to an array
@@ -119,7 +118,6 @@ background.closeAll = function(){
 	chrome.storage.sync.get('kill',function(obj){
 		background.ids = obj.kill;
 		background.kill();
-
 		})
 	};
 
@@ -130,10 +128,7 @@ background.closeLast = function(){
 		chrome.storage.sync.get('lastLaunch',function(obj){
 			background.lastLaunchArray = obj.lastLaunch;
 			background.killLast();
-
 		})
-
-
 	});
 }
 
@@ -149,7 +144,6 @@ background.kill = function(){
 	background.ids = [];
 	background.lastLaunchArray = [];
 	background.storeIDs(background.ids, background.lastLaunchArray);
-
 }
 
 background.killLast = function(){
@@ -168,6 +162,4 @@ background.killLast = function(){
 			background.storeIDs(background.ids, background.lastLaunchArray);
 		}
 	}
-
-
 }
