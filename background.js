@@ -140,12 +140,10 @@ background.closeLast = function(){
 // iterate through window ids and close each one
 background.kill = function(){
 	$.each(background.ids, function(index,value){
-		try {
-			chrome.windows.remove(value);
-		}
-		catch(err){
-			console.log('Window with id '+value+' already closed.')
-		}
+		chrome.windows.remove(value, function () {
+			if(chrome.runtime.lastError)
+				console.warn("Warning, but that's ok:", chrome.runtime.lastError);
+		});
 	});
 
 	background.ids = [];
@@ -158,14 +156,11 @@ background.killLast = function(){
 	var k = background.lastLaunchArray.pop();
 	var n = background.ids.length;
 
-
 	for (var i = n-1; i >= n-k; i--){
-		try{
-			chrome.windows.remove(background.ids[i])
-		}
-		catch(err){
-			console.log('Window with id '+background.ids[i]+' already closed.')
-		}
+			chrome.windows.remove(background.ids[i], function () {
+				if(chrome.runtime.lastError)
+					console.warn("Warning, but that's ok:", chrome.runtime.lastError);
+			});
 
 		background.ids.pop();
 
