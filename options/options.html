@@ -15,8 +15,12 @@
 
 <body>
 <div class='container'>
+	<div id='alert-box' class="alert alert-info" role="alert" style="display:none;">
+		Info message here
+	</div>
 	<div id='main-menu'>
 		<div class='row'>
+
 			<div id='edit-panel-container' class='col-xs-12'>
 				<div id='edit-panel' class='panel panel-default'>
 					<div class='panel-heading'>Edit profile</div>
@@ -37,7 +41,10 @@
 				  <ul class="dropdown-menu">
 				    <li><a href="#" id='import-button'><span class="glyphicon glyphicon-import" aria-hidden="true"></span>  Import</a></li>
 				    <li><a href="#" id='export-button'><span class="glyphicon glyphicon-export" aria-hidden="true"></span>  Export</a></li>
-				    <!-- <li role="separator" class="divider"></li>
+
+							  	<input type="file" id="filePicker" class="custom-file-input" style="display:none;">
+
+						<!-- <li role="separator" class="divider"></li>
 				    <li><a href="#">Future Action</a></li> -->
 				  </ul>
 				</div>

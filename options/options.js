@@ -738,9 +738,52 @@ options.deleteShortcut = function() {
 }
 
 options.export = function () {
-	console.log("ex");
+	//extracting the complete storage structure from storage
+	chrome.storage.sync.get('settings', function(obj){
+		console.log("settings", obj);
+		if(!$.isEmptyObject(obj))
+		{
+			//Serialise
+			var data = JSON.stringify(obj);
+			// Save as file
+			var url = 'data:application/json;base64,' + btoa(data);
+			chrome.downloads.download({
+					url: url,
+					filename: 'filename_of_exported_file.json'
+			}, function () {
+				if(chrome.runtime.lastError)
+					options.createAutoClosingAlert("Export failed. Error:" + chrome.runtime.lastError);
+				else
+					options.createAutoClosingAlert("All Profiles exported");
+			});
+		}
+		else {
+			options.createAutoClosingAlert("Nothing to export. Are you looking for import instead?");
+		}
+	})
 }
 
 options.import = function () {
-	console.log("im");
+	var filePicker = $('#filePicker');
+
+	filePicker.change(function () {
+		// create reader
+    var reader = new FileReader();
+    reader.readAsText($(this).get(0).files[0]);
+    reader.onload = function(e) {
+        //browser completed reading file - display it
+        console.log(e, e.target.result);
+
+				var obj = JSON.parse(e.target.result);
+				console.log(obj);
+    };
+	})
+	filePicker.click();
+}
+
+options.createAutoClosingAlert = function (message){
+   var alertBox = $('#alert-box');
+	 alertBox.html("<strong>" + message + "</strong>");
+	 alertBox.show();
+   window.setTimeout(function() { alertBox.hide() }, 4000);
 }
