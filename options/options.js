@@ -46,8 +46,10 @@ $(document).ready(function(){
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
 
-	options.initializeShortcutPage();
+	document.querySelector('#import-button').addEventListener('click',options.import);
+	document.querySelector('#export-button').addEventListener('click',options.export);
 
+	options.initializeShortcutPage();
 });
 
 // update naming scheme if data was saved using old version
@@ -733,4 +735,12 @@ options.deleteShortcut = function() {
 	})
 
 	$(shortcutPanel).parent().remove();
+}
+
+options.export = function () {
+	console.log("ex");
+}
+
+options.import = function () {
+	console.log("im");
 }

@@ -17,7 +17,7 @@
 <div class='container'>
 	<div id='main-menu'>
 		<div class='row'>
-			<div class='col-xs-12'>
+			<div id='edit-panel-container' class='col-xs-12'>
 				<div id='edit-panel' class='panel panel-default'>
 					<div class='panel-heading'>Edit profile</div>
 					<div class='panel-body'>
@@ -27,9 +27,20 @@
 			</div>
 		</div>
 		<div class='row'>
-			<div class='col-xs-12'>
-				<button id='shortcut-button' class='btn btn-default pull-left'>Shortcuts</button>
-				<button id='new' class='btn btn-default pull-right'>New profile</button>
+			<div class='col-xs-12 btn-toolbar'>
+				<button id='shortcut-button' class='btn btn-default'>Shortcuts</button>
+				<button id='new' class='btn btn-default'>New profile</button>
+				<div class="btn-group pull-right">
+					<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	    			Advanced <span class="caret"></span>
+	  			</button>
+				  <ul class="dropdown-menu">
+				    <li><a href="#" id='import-button'><span class="glyphicon glyphicon-import" aria-hidden="true"></span>  Import</a></li>
+				    <li><a href="#" id='export-button'><span class="glyphicon glyphicon-export" aria-hidden="true"></span>  Export</a></li>
+				    <!-- <li role="separator" class="divider"></li>
+				    <li><a href="#">Future Action</a></li> -->
+				  </ul>
+				</div>
 			</div>
 		</div>
 	</div>
