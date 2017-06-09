@@ -46,7 +46,10 @@ $(document).ready(function(){
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
 
-	document.querySelector('#import-button').addEventListener('click',options.import);
+	var filePicker = $('#filePicker');
+	filePicker.change(options.onFilePicked);
+
+	document.querySelector('#import-button').addEventListener('click',function () {filePicker.click();});
 	document.querySelector('#export-button').addEventListener('click',options.export);
 
 	options.initializeShortcutPage();
@@ -743,13 +746,15 @@ options.export = function () {
 		console.log("settings", obj);
 		if(!$.isEmptyObject(obj))
 		{
+			var data ={};
 			//Serialise
-			var data = JSON.stringify(obj);
+			data.settings = JSON.stringify(obj);
+			data.hash = options.getHash(data.settings);
 			// Save as file
-			var url = 'data:application/json;base64,' + btoa(data);
+			var url = 'data:application/json;base64,' + btoa(JSON.stringify(data));
 			chrome.downloads.download({
 					url: url,
-					filename: 'filename_of_exported_file.json'
+					filename: 'MultiScreenPresentation.profiles'
 			}, function () {
 				if(chrome.runtime.lastError)
 					options.createAutoClosingAlert("Export failed. Error:" + chrome.runtime.lastError);
@@ -763,22 +768,39 @@ options.export = function () {
 	})
 }
 
-options.import = function () {
-	var filePicker = $('#filePicker');
-
-	filePicker.change(function () {
+options.onFilePicked = function () {
 		// create reader
     var reader = new FileReader();
     reader.readAsText($(this).get(0).files[0]);
     reader.onload = function(e) {
-        //browser completed reading file - display it
-        console.log(e, e.target.result);
+			try {
+				//browser completed reading file - display it
+				var obj = JSON.parse(e.target.result);prateek
+				console.log(obj, options.getHash(obj.settings));
+				if(obj.hash === options.getHash(obj.settings))
+				{
 
-				var obj = JSON.parse(e.target.result);
-				console.log(obj);
+
+					var overwrite = chrome.extension.getBackgroundPage().confirm('The following profiles are being imported.' +
+					'Any existing profile with same name will be overwritten.\n\n' + );
+
+					if(overwrite){
+
+					}
+
+					options.populate();
+				}
+				else {
+					options.createAutoClosingAlert('CheckSum didn\'t match. Invalid file.');
+				}
+			} catch (e) {
+				options.createAutoClosingAlert('Invalid format. Please try again with a valid file.');
+			} finally
+			{
+				var filePicker = $('#filePicker');
+				filePicker.val('');
+			}
     };
-	})
-	filePicker.click();
 }
 
 options.createAutoClosingAlert = function (message){
@@ -786,4 +808,23 @@ options.createAutoClosingAlert = function (message){
 	 alertBox.html("<strong>" + message + "</strong>");
 	 alertBox.show();
    window.setTimeout(function() { alertBox.hide() }, 4000);
+}
+
+//Hash is added to the export data structure to verify the integrity of the data.
+//If the saved and calculated hash dont match while impoting, appropriate message is shown.
+options.getHash = function (content) {
+	 //from http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+	 var hash = 0,
+	 strlen = content.length,
+	 i,
+	 c;
+	 if ( strlen === 0 ) {
+	 return hash;
+	 }
+	 for ( i = 0; i < strlen; i++ ) {
+	 c = content.charCodeAt( i );
+	 hash = ((hash << 5) - hash) + c;
+	 hash = hash & hash; // Convert to 32bit integer
+	 }
+	 return hash;
 }
