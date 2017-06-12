@@ -745,8 +745,7 @@ options.deleteShortcut = function() {
 options.export = function () {
 	//extracting the complete storage structure from storage
 	chrome.storage.sync.get('settings', function(obj){
-		console.log("settings", obj);
-		if(!$.isEmptyObject(obj))
+		if(!$.isEmptyObject(obj.settings))
 		{
 			var data ={};
 			//Serialise
