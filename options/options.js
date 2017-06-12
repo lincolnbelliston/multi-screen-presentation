@@ -741,6 +741,7 @@ options.deleteShortcut = function() {
 	$(shortcutPanel).parent().remove();
 }
 
+//Extract the 'settings' section of the storage, which contains the presentation profiles.
 options.export = function () {
 	//extracting the complete storage structure from storage
 	chrome.storage.sync.get('settings', function(obj){
@@ -769,6 +770,7 @@ options.export = function () {
 	})
 }
 
+//Triggered on 'import profile'
 options.onFilePicked = function () {
 		// create reader
     var reader = new FileReader();
@@ -777,8 +779,8 @@ options.onFilePicked = function () {
 			try {
 				//browser completed reading file - display it
 				var obj = JSON.parse(e.target.result);
-				console.log(obj);
-				console.log( options.getHash(obj.profiles));
+
+				//making sure the file is not tempered and fit to be imported
 				if(obj.hash === options.getHash(obj.profiles))
 				{
 					var settingsObj = JSON.parse(obj.profiles).settings;
@@ -790,16 +792,21 @@ options.onFilePicked = function () {
 					+ '\n\nAny existing profile with same name will be overwritten!');
 
 					if(overwrite){
+						//making sure the structure is within the allowed limits
 						if(JSON.stringify(settingsObj).length > 8190){
 							chrome.extension.getBackgroundPage().alert('Chrome storage allotment exceeded. Please delete one or more profiles before saving another.');
 							return;
 						}
 
-							chrome.storage.sync.set({
-								'settings':settingsObj
-						});
+							chrome.storage.sync.set({'settings':settingsObj }, function () {
+								if(chrome.runtime.lastError)
+									options.createAutoClosingAlert("Import failed. Error:" + chrome.runtime.lastError);
+								else
+									options.createAutoClosingAlert("Profiles have been imported.");
+							});
 					}
 
+					//refresh once new profiles are loaded
 					options.refresh();
 				}
 				else {
@@ -816,6 +823,7 @@ options.onFilePicked = function () {
     };
 }
 
+//bootstrap alert box comes to the rescue
 options.createAutoClosingAlert = function (message){
    var alertBox = $('#alert-box');
 	 alertBox.html("<strong>" + message + "</strong>");
@@ -823,10 +831,17 @@ options.createAutoClosingAlert = function (message){
    window.setTimeout(function() { alertBox.hide() }, 4000);
 }
 
+//clear the complete storage structure and start afresh
 options.clearStorage = function () {
-	chrome.storage.sync.clear(function () {
-		options.refresh();
-	});
+	var proceed = chrome.extension.getBackgroundPage().confirm('Do you really want to clear the storage.'
+	+ ' This action is irreversible!');
+	if(proceed)
+	{
+		chrome.storage.sync.clear(function () {
+			options.createAutoClosingAlert("Profiles cleared. Start afresh...");
+			options.refresh();
+		});
+	}
 }
 
 //Hash is added to the export data structure to verify the integrity of the data.
