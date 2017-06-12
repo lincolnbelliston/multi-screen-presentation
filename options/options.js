@@ -45,6 +45,7 @@ $(document).ready(function(){
 	document.querySelector('#back').addEventListener('click',options.back);
 	document.querySelector('#help').addEventListener('click',options.help);
 	document.querySelector('#shortcut-button').addEventListener('click',options.shortcuts);
+	document.querySelector('#autofillBtn').addEventListener('click',options.autoGenerate);
 
 	var filePicker = $('#filePicker');
 	filePicker.change(options.onFilePicked);
@@ -822,6 +823,25 @@ options.onFilePicked = function () {
     };
 }
 
+//Hash is added to the export data structure to verify the integrity of the data.
+//If the saved and calculated hash dont match while impoting, appropriate message is shown.
+options.getHash = function (content) {
+	 //from http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
+	 var hash = 0,
+	 strlen = content.length,
+	 i,
+	 c;
+	 if ( strlen === 0 ) {
+	 return hash;
+	 }
+	 for ( i = 0; i < strlen; i++ ) {
+	 c = content.charCodeAt( i );
+	 hash = ((hash << 5) - hash) + c;
+	 hash = hash & hash; // Convert to 32bit integer
+	 }
+	 return hash;
+}
+
 //bootstrap alert box comes to the rescue
 options.createAutoClosingAlert = function (message){
    var alertBox = $('#alert-box');
@@ -843,21 +863,5 @@ options.clearStorage = function () {
 	}
 }
 
-//Hash is added to the export data structure to verify the integrity of the data.
-//If the saved and calculated hash dont match while impoting, appropriate message is shown.
-options.getHash = function (content) {
-	 //from http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
-	 var hash = 0,
-	 strlen = content.length,
-	 i,
-	 c;
-	 if ( strlen === 0 ) {
-	 return hash;
-	 }
-	 for ( i = 0; i < strlen; i++ ) {
-	 c = content.charCodeAt( i );
-	 hash = ((hash << 5) - hash) + c;
-	 hash = hash & hash; // Convert to 32bit integer
-	 }
-	 return hash;
+options.autoGenerate = function () {
 }
