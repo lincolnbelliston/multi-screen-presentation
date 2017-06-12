@@ -51,6 +51,7 @@ $(document).ready(function(){
 
 	document.querySelector('#import-button').addEventListener('click',function () {filePicker.click();});
 	document.querySelector('#export-button').addEventListener('click',options.export);
+	document.querySelector('#trash-button').addEventListener('click',options.clearStorage);
 
 	options.initializeShortcutPage();
 });
@@ -748,13 +749,13 @@ options.export = function () {
 		{
 			var data ={};
 			//Serialise
-			data.settings = JSON.stringify(obj);
-			data.hash = options.getHash(data.settings);
+			data.profiles = JSON.stringify(obj);
+			data.hash = options.getHash(data.profiles);
 			// Save as file
 			var url = 'data:application/json;base64,' + btoa(JSON.stringify(data));
 			chrome.downloads.download({
 					url: url,
-					filename: 'MultiScreenPresentation.profiles'
+					filename: 'MultiScreenPresentation.profiles.settings'
 			}, function () {
 				if(chrome.runtime.lastError)
 					options.createAutoClosingAlert("Export failed. Error:" + chrome.runtime.lastError);
@@ -775,26 +776,38 @@ options.onFilePicked = function () {
     reader.onload = function(e) {
 			try {
 				//browser completed reading file - display it
-				var obj = JSON.parse(e.target.result);prateek
-				console.log(obj, options.getHash(obj.settings));
-				if(obj.hash === options.getHash(obj.settings))
+				var obj = JSON.parse(e.target.result);
+				console.log(obj);
+				console.log( options.getHash(obj.profiles));
+				if(obj.hash === options.getHash(obj.profiles))
 				{
-
-
-					var overwrite = chrome.extension.getBackgroundPage().confirm('The following profiles are being imported.' +
-					'Any existing profile with same name will be overwritten.\n\n' + );
+					var settingsObj = JSON.parse(obj.profiles).settings;
+					var keys = " ";
+	        $.each(settingsObj, function(k){ keys += '\n * ' + k; });
+					console.log(settingsObj, keys);
+					var overwrite = chrome.extension.getBackgroundPage().confirm('The following profiles are being imported: '
+					+	'\n' + keys
+					+ '\n\nAny existing profile with same name will be overwritten!');
 
 					if(overwrite){
+						if(JSON.stringify(settingsObj).length > 8190){
+							chrome.extension.getBackgroundPage().alert('Chrome storage allotment exceeded. Please delete one or more profiles before saving another.');
+							return;
+						}
 
+							chrome.storage.sync.set({
+								'settings':settingsObj
+						});
 					}
 
-					options.populate();
+					options.refresh();
 				}
 				else {
 					options.createAutoClosingAlert('CheckSum didn\'t match. Invalid file.');
 				}
 			} catch (e) {
 				options.createAutoClosingAlert('Invalid format. Please try again with a valid file.');
+				console.log(e);
 			} finally
 			{
 				var filePicker = $('#filePicker');
@@ -808,6 +821,12 @@ options.createAutoClosingAlert = function (message){
 	 alertBox.html("<strong>" + message + "</strong>");
 	 alertBox.show();
    window.setTimeout(function() { alertBox.hide() }, 4000);
+}
+
+options.clearStorage = function () {
+	chrome.storage.sync.clear(function () {
+		options.refresh();
+	});
 }
 
 //Hash is added to the export data structure to verify the integrity of the data.
