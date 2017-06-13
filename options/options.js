@@ -871,7 +871,7 @@ options.clearStorage = function () {
 //Tries to fill the URLs, Automatically.
 options.autoGenerate = function () {
 	var masterInput = $('#urls #a0 #urlInput').val();
-	var regex = '\\d+';
+	var regex = '(\\d+)$';
 	var regMatch = masterInput.match(regex);
 	var masterURL = masterInput.substring(0, regMatch.index);
 
