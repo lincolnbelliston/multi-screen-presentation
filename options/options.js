@@ -302,19 +302,33 @@ options.help = function(){
 
 // add url fields when # of Monitors is changed (this could be set by # of browsers later on)
 options.urlField = function() {
-	var i = options.numberOfMonitors
 	var monitors = Number(document.getElementById('monNum').value);
-	if (monitors>i){
-		for (var j=i; j<monitors; j++){
+	var actualMonitors = $('#urls').children().length;
+
+	if(monitors < 1)
+	{
+		monitors = 1;
+		document.getElementById('monNum').value = 1;
+	}
+	else if(monitors > 50) {
+		monitors = 50;
+		document.getElementById('monNum').value = 50;
+		options.createAutoClosingAlert("Window limit is soft-capped to 50");
+	}
+
+	if (monitors>actualMonitors){
+		for (var j=actualMonitors; j<monitors; j++){
 				$('#urls').append('<div id="a'+j+'" class="url"><input type="url" class="form-control"></br></div>');
 		}
 	} else{
-		var j = $('.url').length
+		var j = actualMonitors;
 		for (j; j>monitors; j--){
 				$('.url').last().remove();
 		}
 	}
 	options.m = monitors;
+
+	actualMonitors = $('#urls').children().length;
 }
 
 options.save = function() {
