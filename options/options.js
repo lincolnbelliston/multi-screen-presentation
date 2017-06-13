@@ -539,7 +539,6 @@ options.editShortcut = function(isNew){
 			}
 		})
 		$(shortcutSelect).val(shortcutName);
-
 	}
 
 	var shortcutName = shortcutPanel.attr('data-shortcutName');
@@ -570,7 +569,6 @@ options.recoverShortcutSettings = function(shortcutName) {
 			}
 		}
 	})
-
 }
 
 options.displayShortcutSettings = function(shortcutName, shortcutCondition) {
@@ -629,7 +627,6 @@ options.saveEditShortcut = function() {
 				$(editButton).click(function(){
 					options.editShortcut(false);
 				})
-
 			}
 			chrome.storage.sync.set(
 			{
@@ -656,7 +653,6 @@ options.saveEditShortcut = function() {
 
 		options.cancelEditShortcut(saveEvent);
 	});
-
 }
 
 options.clearEditShortcut = function(){
@@ -685,16 +681,12 @@ options.cancelEditShortcut = function(event) {
 	$(shortcutPanel).find('.edit-shortcut-button').show();
 	$(shortcutPanel).find('.keyboard-view').remove();
 	$(shortcutPanel).find('.cancel-edit-shortcut').remove();
-
-
-
 }
 
 options.addShortcut = function(){
 	options.appendShortcut(true,"",function(){
 		$('button.edit-shortcut-button:last')[0].click()
 	});
-
 }
 
 options.appendShortcut = function(isNew, shortcutName, callBack){
@@ -720,7 +712,6 @@ options.appendShortcut = function(isNew, shortcutName, callBack){
 			options.editShortcut(true);
 		})
 	}
-
 		callBack();
 	});
 
@@ -877,5 +868,14 @@ options.clearStorage = function () {
 	}
 }
 
+//Tries to fill the URLs, Automatically.
 options.autoGenerate = function () {
+	var masterInput = $('#urls #a0 #urlInput').val();
+	var regex = '\\d+';
+	var regMatch = masterInput.match(regex);
+	var masterURL = masterInput.substring(0, regMatch.index);
+
+	$('#urls .url').each(function (index, value) {
+		$(value).find('input[type=url]').val(masterURL + (Number(regMatch[0]) + index));
+	});
 }
