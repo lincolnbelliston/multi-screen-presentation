@@ -162,16 +162,17 @@ options.edit = function(profileName,isnew) {
 			$('#row').val(object.r);
 			$('#col').val(object.c);
 			options.gridY();
-			options.gridX();
+			options.gridX();			
+			options.urlField();
+			
 			$(object.l).each(function(index,value){
-				var numberOfMonitors = $('td.monitor-grid-element[data-row='+value[0]+'][data-col='+value[1]+']');
-				$(numberOfMonitors).attr('bold',true).html(value[2]);
+				var gridCell = $('td.monitor-grid-element[data-row='+value[0]+'][data-col='+value[1]+']');
+				$(gridCell).attr('bold',true).html(value[2]);
 				options.currMon = Number(value[2]) + 1;
 			});
 			var c = $('td.monitor-grid-element[data-row='+object.t[0]+'][data-col='+object.t[1]+']');
 			$('td.monitor-grid-element').attr('clicked',false);
 			$(c).attr('clicked',true);
-			options.urlField();
 			var n = 0;
 			$('.url input').each(function(index,value){
 				$(this).val(object.u[index]);
@@ -203,23 +204,22 @@ options.populate = function(){
 
 // update the monitor grid display when row/column controls change
 options.gridY = function(){
+	options.clear();
+
+	//Cap rows from 1 to 20
+	if(Number(document.getElementById('row').value) < 1)
+		document.getElementById('row').value = 1;
+	else if(Number(document.getElementById('row').value) > 20)
+		document.getElementById('row').value = 20;
 
 	var rowsUpdateTo = options.gridRows;
-
-	// var rowStr = "";
-	// for(var rowInd = 1; rowInd<=rowsUpdateTo; rowInd ++)
-	// {
-	// 		for(var k=0; k<options.gridColumns; k++){
-	// 		rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+rowInd+' data-col='+k+'></td>');
-	// 	}
-	// }
 
 	var existingRows = Number(document.getElementById('row').value);
 	if (existingRows>rowsUpdateTo){
 		for (var j=rowsUpdateTo; j<existingRows; j++){
 			var rowStr='';
 			for(var k=0; k<options.gridColumns; k++){
-					rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+j+' data-col='+k+'></td>');
+					rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+j+' data-col='+k+' bold=false></td>');
 				}
 
 			$('#monGrid').append('<tr class="monitor-grid-row">'+rowStr+'</tr>');
@@ -237,6 +237,15 @@ options.gridY = function(){
 }
 
 options.gridX = function(){
+
+	options.clear();
+
+	//Cap cols from 1 to 20
+	if(Number(document.getElementById('col').value) < 1)
+		document.getElementById('col').value = 1;
+	else if(Number(document.getElementById('col').value) > 20)
+		document.getElementById('col').value = 20;
+
 	var c = options.gridColumns;
 	var r = options.gridRows;
 	var col = Number(document.getElementById('col').value);
@@ -262,12 +271,12 @@ options.gridX = function(){
 options.clickGrid = function(event){
 	if(event.target !== event.currentTarget){
 		var clickedItem = event.target;
-		var monNum = Number($('#monNum').val())
+		var monNum = Number($('#monNum').val());
 
 		if (options.currMon <= monNum){
 			if($(clickedItem).attr('bold') == 'false'){
 				$(clickedItem).attr('bold',true).html(options.currMon)
-				options.currMon = ++options.currMon
+				options.currMon = ++options.currMon;
 			}
 		}
 	}
@@ -300,6 +309,7 @@ options.clear = function(){
 	$('td.monitor-grid-element').attr('bold',false).attr('clicked',false).html('');
 	options.currMon = 1;
 
+	options.alreadyClicked = false;
 }
 
 // show help alert on click
@@ -310,6 +320,10 @@ options.help = function(){
 
 // add url fields when # of Monitors is changed (this could be set by # of browsers later on)
 options.urlField = function() {
+
+	//Clear old values;
+	options.clear();
+
 	var monitors = Number(document.getElementById('monNum').value);
 	var actualMonitors = $('#urls').children().length;
 
@@ -351,7 +365,8 @@ options.save = function() {
 		var controlElement = $('td.monitor-grid-element[clicked=true]');
 		var control = [$(controlElement).attr('data-row'),$(controlElement).attr('data-col')]
 		var locations = [];
-		var selected = $('td.monitor-grid-element[bold=true');
+		var selected = $('td.monitor-grid-element[bold=true]');
+		
 		$.each(selected,function(index,value){
 			locations.push([$(value).attr('data-row'),$(value).attr('data-col'),$(value).html()])
 		});
@@ -799,7 +814,6 @@ options.onFilePicked = function () {
 					var settingsObj = JSON.parse(obj.profiles).settings;
 					var keys = " ";
 	        $.each(settingsObj, function(k){ keys += '\n * ' + k; });
-					console.log(settingsObj, keys);
 					var overwrite = chrome.extension.getBackgroundPage().confirm('The following profiles are being imported: '
 					+	'\n' + keys
 					+ '\n\nAny existing profile with same name will be overwritten!');
@@ -881,9 +895,14 @@ options.autoGenerate = function () {
 	var masterInput = $('#urls #a0 #urlInput').val();
 	var regex = '(\\d+)$';
 	var regMatch = masterInput.match(regex);
-	var masterURL = masterInput.substring(0, regMatch.index);
 
-	$('#urls .url').each(function (index, value) {
-		$(value).find('input[type=url]').val(masterURL + (Number(regMatch[0]) + index));
-	});
+	if(regMatch != null)
+	{		
+		var masterURL = masterInput.substring(0, regMatch.index);
+		$('#urls .url').each(function (index, value) {
+			$(value).find('input[type=url]').val(masterURL + (Number(regMatch[0]) + index));
+		});
+	}
+	else
+		options.createAutoClosingAlert("Sorry, can't find generator pattern( ....com?id=*number*).");
 }
