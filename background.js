@@ -50,7 +50,7 @@ background.launch = function(profileData){
 
 	$(profileData.l).each(function(index,value){
 		var url_string = profileData.u[index];
-		if(url_string == '') {
+		if(url_string == '' || url_string == undefined) {
 			url_string = 'chrome://newtab';
 		} else if(!(/http/).test(url_string)){
 			url_string = 'https://' + url_string;

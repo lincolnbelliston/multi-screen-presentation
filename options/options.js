@@ -204,27 +204,35 @@ options.populate = function(){
 // update the monitor grid display when row/column controls change
 options.gridY = function(){
 
-	var r = options.gridRows;
+	var rowsUpdateTo = options.gridRows;
 
-	var rowStr = "";
-	for(var k=0; k<options.gridColumns; k++){
-		rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+r+' data-col='+k+'></td>');
-	}
+	// var rowStr = "";
+	// for(var rowInd = 1; rowInd<=rowsUpdateTo; rowInd ++)
+	// {
+	// 		for(var k=0; k<options.gridColumns; k++){
+	// 		rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+rowInd+' data-col='+k+'></td>');
+	// 	}
+	// }
 
-	var row = Number(document.getElementById('row').value);
-	if (row>r){
-		for (var j=r; j<row; j++){
+	var existingRows = Number(document.getElementById('row').value);
+	if (existingRows>rowsUpdateTo){
+		for (var j=rowsUpdateTo; j<existingRows; j++){
+			var rowStr='';
+			for(var k=0; k<options.gridColumns; k++){
+					rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+j+' data-col='+k+'></td>');
+				}
+
 			$('#monGrid').append('<tr class="monitor-grid-row">'+rowStr+'</tr>');
-			r = ++r;
+			rowsUpdateTo = ++rowsUpdateTo;
 		}
 	} else{
 		var j = $('tr.monitor-grid-row').length
-		for (j; j>row; j--){
+		for (j; j>existingRows; j--){
 			$('tr.monitor-grid-row').last().remove();
-			r = --r;
+			rowsUpdateTo = --rowsUpdateTo;
 		}
 	}
-	options.gridRows = row;
+	options.gridRows = existingRows;
 
 }
 
