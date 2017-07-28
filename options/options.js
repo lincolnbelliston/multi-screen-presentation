@@ -3,6 +3,9 @@ Logic for options page.
 *////////////////////////////////////////////////////////////////
 
 var options = {};
+
+options.activeProfileName = '';
+
 $(document).ready(function(){
 	 //chrome.storage.sync.clear();
 	 //return
@@ -149,10 +152,12 @@ options.edit = function(profileName,isnew) {
 	$('#profile-settings').show();
 	$('#delete').attr('disabled',true)
 	options.alreadyClicked = false;
+	options.activeProfileName = '';
 
 	if(isnew==false){
 		// retrieve settings and populate fields;
-		options.alreadyClicked = true;
+		options.activeProfileName = profileName;
+		
 		$('#delete').attr('disabled',false)
 		options.add_to_list = false
 		chrome.storage.sync.get('settings',function(obj){
@@ -164,19 +169,25 @@ options.edit = function(profileName,isnew) {
 			options.gridY();
 			options.gridX();			
 			options.urlField();
-			
+			options.alreadyClicked = true;
+
+			//Set up monitor grid
 			$(object.l).each(function(index,value){
 				var gridCell = $('td.monitor-grid-element[data-row='+value[0]+'][data-col='+value[1]+']');
 				$(gridCell).attr('bold',true).html(value[2]);
 				options.currMon = Number(value[2]) + 1;
 			});
-			var c = $('td.monitor-grid-element[data-row='+object.t[0]+'][data-col='+object.t[1]+']');
+
+			//Set up control monitor
 			$('td.monitor-grid-element').attr('clicked',false);
+			var c = $('td.monitor-grid-element[data-row='+object.t[0]+'][data-col='+object.t[1]+']');
 			$(c).attr('clicked',true);
-			var n = 0;
+			
+			//Set up urls
 			$('.url input').each(function(index,value){
 				$(this).val(object.u[index]);
 			});
+			
 		});
 	};
 }
@@ -309,7 +320,8 @@ options.clear = function(){
 	$('td.monitor-grid-element').attr('bold',false).attr('clicked',false).html('');
 	options.currMon = 1;
 
-	options.alreadyClicked = false;
+	$('td.monitor-grid-element[clicked=true]').attr('clicked',false);
+	options.alreadyClicked = false;	
 }
 
 // show help alert on click
@@ -354,7 +366,9 @@ options.urlField = function() {
 }
 
 options.save = function() {
-	if (options.alreadyClicked == false){
+	if(document.getElementById('name').value == ''){
+		chrome.extension.getBackgroundPage().alert('Error: Please provide a valid name.');
+	} else if (options.alreadyClicked == false){
 		chrome.extension.getBackgroundPage().alert('Error: no control monitor selected. Please double click the square that corresponds to the control monitor (the monitor on which the start menu is displayed.')
 	} else{
 
@@ -454,13 +468,14 @@ options.refresh = function() {
 // delete profile. Since profile is deleted by accessing the name, if two items on the list have the same name, both will be deleted
 options.deleteProfile = function() {
 
-		var del = chrome.extension.getBackgroundPage().confirm('Are you sure you want to delete this profile?');
+		var del = chrome.extension.getBackgroundPage().confirm('Are you sure you want to delete the profile: "'
+		+ options.activeProfileName + '" ?');
 		if(del){
 			var toDelete = $('#name').val();
 			chrome.storage.sync.get('settings',function(obj){
 				newObject = obj.settings;
 				delete newObject[toDelete];
-				$('#edit option[value='+toDelete+']').remove();
+				//$('#edit option[value='+toDelete+']').remove();
 				chrome.storage.sync.set({
 					'settings':newObject
 				})
