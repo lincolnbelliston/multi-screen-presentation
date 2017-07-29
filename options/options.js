@@ -222,28 +222,28 @@ options.gridY = function(){
 	else if(Number(document.getElementById('row').value) > 20)
 		document.getElementById('row').value = 20;
 
-	var rowsUpdateTo = options.gridRows;
+	var existingRows = options.gridRows;
 
-	var existingRows = Number(document.getElementById('row').value);
-	if (existingRows>rowsUpdateTo){
-		for (var j=rowsUpdateTo; j<existingRows; j++){
+	var rowsUpdateTo = Number(document.getElementById('row').value);
+	if (rowsUpdateTo>existingRows){
+		for (var j=existingRows; j<rowsUpdateTo; j++){
 			var rowStr='';
 			for(var k=0; k<options.gridColumns; k++){
 					rowStr = rowStr.concat('<td class="monitor-grid-element" data-row='+j+' data-col='+k+' bold=false></td>');
 				}
 
 			$('#monGrid').append('<tr class="monitor-grid-row">'+rowStr+'</tr>');
-			rowsUpdateTo = ++rowsUpdateTo;
+			existingRows = ++existingRows;
 		}
 	} else{
 		var j = $('tr.monitor-grid-row').length
-		for (j; j>existingRows; j--){
+		for (j; j>rowsUpdateTo; j--){
 			$('tr.monitor-grid-row').last().remove();
-			rowsUpdateTo = --rowsUpdateTo;
-		}
+			existingRows = --existingRows;
+		}		
+		options.verifyNUpdateMonitors();
 	}
-	options.gridRows = existingRows;
-
+	options.gridRows = rowsUpdateTo;
 }
 
 options.gridX = function(){
@@ -254,25 +254,43 @@ options.gridX = function(){
 	else if(Number(document.getElementById('col').value) > 20)
 		document.getElementById('col').value = 20;
 
-	var c = options.gridColumns;
-	var r = options.gridRows;
-	var col = Number(document.getElementById('col').value);
-	if (col>c){
-		for (var j=c; j<col; j++){
+	var existingCols = options.gridColumns;
+	
+	var updateColTo = Number(document.getElementById('col').value);
+	if (updateColTo>existingCols){
+		for (var j=existingCols; j<updateColTo; j++){
 			$('tr.monitor-grid-row').each(function(index,value){
 				$(value).append('<td class="monitor-grid-element" data-row='+(index)+' data-col='+j+' bold=false></td>');
 			});
 		}
 	} else{
 		var j = $('td.monitor-grid-element[data-row="0"]').length
-		for (j; j>col; j--){
+		for (j; j>updateColTo; j--){
 			$('tr.monitor-grid-row').each(function(index,value){
 				$(value).children().last().remove();
 			})
-		}
+		}		
+		options.verifyNUpdateMonitors();
 	}
-	options.gridColumns = col;
+	options.gridColumns = updateColTo;
+}
 
+options.verifyNUpdateMonitors = function () {
+	var monitorPositions = [];
+	var selectedMonitorsArray = $('td.monitor-grid-element[bold=true]');
+	
+	$.each(selectedMonitorsArray,function(index,value){
+		monitorPositions.push([$(value).attr('data-row'),$(value).attr('data-col'),$(value).html()])
+	});
+
+	monitorPositions.sort(
+		function(first, second){
+				return (first[2] - second[2]);
+   });
+
+   $.each(monitorPositions, function name(index, value) {
+	   $('td[data-row='+value[0]+'][data-col='+value[1]+']').html(index+1);
+   });
 }
 
 // when a grid element is clicked, highlight element and display monitor number
