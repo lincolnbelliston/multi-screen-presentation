@@ -294,13 +294,7 @@ options.verifyNUpdateMonitors = function () {
 	});
 
 	var controlElement = $('td.monitor-grid-element[clicked=true]');
-	var row = col = Number.MAX_SAFE_INTEGER;
-	if (controlElement != null) {
-		row = $(controlElement).attr('data-row');
-		col = $(controlElement).attr('data-col');
-	}
-	console.log(row,col,options.gridRows,options.gridColumns);
-	options.controlMonitorSelected = (row < options.gridRows && col < options.gridColumns)?true:false;
+	options.controlMonitorSelected = (controlElement.length > 0)? true: false;
 }
 
 // when a grid element is clicked, highlight element and display monitor number
@@ -373,7 +367,7 @@ options.urlField = function () {
 
 	if (monitors > actualMonitors) {
 		for (var j = actualMonitors; j < monitors; j++) {
-			$('#urls').append('<div id="a' + j + '" class="url"><input type="url" class="form-control"></br></div>');
+			$('#urls').append('<div id="a' + j + '" class="url"><input type="url" class="form-control" placeholder="Screen ' + (j+1) + ' URL"></br></div>');
 		}
 	} else {
 		var j = actualMonitors;
@@ -392,7 +386,6 @@ options.save = function () {
 	} else if (options.controlMonitorSelected == false) {
 		chrome.extension.getBackgroundPage().alert('Error: no control monitor selected. Please double click the square that corresponds to the control monitor (the monitor on which the start menu is displayed.')
 	} else {
-
 		var name = document.getElementById('name').value.replace(' ', '_');
 		var monitors = document.getElementById('monNum').value;
 		var rows = document.getElementById('row').value;
