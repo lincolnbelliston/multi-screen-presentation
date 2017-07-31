@@ -175,8 +175,9 @@ options.edit = function (profileName, isnew) {
 			$(object.l).each(function (index, value) {
 				var gridCell = $('td.monitor-grid-element[data-row=' + value[0] + '][data-col=' + value[1] + ']');
 				$(gridCell).attr('bold', true).html(value[2]);
-				options.currMon = Number(value[2]) + 1;
 			});
+
+			options.currMon = object.l.length + 1;
 
 			//Set up control monitor
 			$('td.monitor-grid-element').attr('clicked', false);
@@ -291,6 +292,15 @@ options.verifyNUpdateMonitors = function () {
 	$.each(monitorPositions, function name(index, value) {
 		$('td[data-row=' + value[0] + '][data-col=' + value[1] + ']').html(index + 1);
 	});
+
+	var controlElement = $('td.monitor-grid-element[clicked=true]');
+	var row = col = Number.MAX_SAFE_INTEGER;
+	if (controlElement != null) {
+		row = $(controlElement).attr('data-row');
+		col = $(controlElement).attr('data-col');
+	}
+	console.log(row,col,options.gridRows,options.gridColumns);
+	options.controlMonitorSelected = (row < options.gridRows && col < options.gridColumns)?true:false;
 }
 
 // when a grid element is clicked, highlight element and display monitor number
