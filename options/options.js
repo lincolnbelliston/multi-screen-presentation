@@ -19,7 +19,7 @@ $(document).ready(function () {
 	options.gridRows = 1;
 	options.numberOfMonitors = 1;
 	options.locations = [];
-	options.curr_profile = {};
+	
 	options.currentShortcuts = {};
 	options.customShortcutNames = [];
 
@@ -293,6 +293,8 @@ options.verifyNUpdateMonitors = function () {
 		$('td[data-row=' + value[0] + '][data-col=' + value[1] + ']').html(index + 1);
 	});
 
+	options.currMon = monitorPositions.length + 1;
+
 	var controlElement = $('td.monitor-grid-element[clicked=true]');
 	options.controlMonitorSelected = (controlElement.length > 0)? true: false;
 }
@@ -443,14 +445,17 @@ options.save = function () {
 			// to save, the entire object must be retrieved, the individual profile altered,
 			// and then the whole object saved again
 			chrome.storage.sync.get('settings', function (obj) {
-				options.curr_profile = obj.settings;
-				options.curr_profile[name] = JSON.stringify(settings);
-				if (JSON.stringify(options.curr_profile).length > 8190) {
+				console.log(options.activeProfileName);
+				if(options.activeProfileName != '')
+					delete obj.settings[options.activeProfileName];
+
+				obj.settings[name] = JSON.stringify(settings);
+				if (JSON.stringify(obj.settings).length > 8190) {
 					chrome.extension.getBackgroundPage().alert('Chrome storage allotment exceeded. Please delete one or more profiles before saving another.');
 					return;
 				}
 				chrome.storage.sync.set({
-					'settings': options.curr_profile
+					'settings': obj.settings
 				});
 			});
 
