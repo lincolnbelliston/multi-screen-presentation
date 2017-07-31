@@ -217,6 +217,9 @@ options.populate = function () {
 // update the monitor grid display when row/column controls change
 options.gridY = function () {
 
+	//HTML tags did not work
+	document.getElementById('row').value = parseInt(document.getElementById('row').value)
+
 	//Cap rows from 1 to 20
 	if (Number(document.getElementById('row').value) < 1)
 		document.getElementById('row').value = 1;
@@ -248,6 +251,8 @@ options.gridY = function () {
 }
 
 options.gridX = function () {
+
+	document.getElementById('col').value = parseInt(document.getElementById('col').value)
 
 	//Cap cols from 1 to 20
 	if (Number(document.getElementById('col').value) < 1)
@@ -354,6 +359,8 @@ options.help = function () {
 // add url fields when # of Monitors is changed (this could be set by # of browsers later on)
 options.urlField = function () {
 
+	document.getElementById('monNum').value = parseInt(document.getElementById('monNum').value)
+	
 	var monitors = Number(document.getElementById('monNum').value);
 	var actualMonitors = $('#urls').children().length;
 
