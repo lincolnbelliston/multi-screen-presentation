@@ -930,15 +930,17 @@ options.clearStorage = function () {
 //Tries to fill the URLs, Automatically.
 options.autoGenerate = function () {
 	var masterInput = $('#urls #a0 #urlInput').val();
-	var regex = '(\\d+)$';
+	var regex = '(\\d+)([^\\d]*)$';
 	var regMatch = masterInput.match(regex);
 
 	if (regMatch != null) {
 		var masterURL = masterInput.substring(0, regMatch.index);
+		var sequence = regMatch[1];
+		var terminal = regMatch[2];
 		$('#urls .url').each(function (index, value) {
-			$(value).find('input[type=url]').val(masterURL + (Number(regMatch[0]) + index));
+			$(value).find('input[type=url]').val(masterURL + (Number(sequence) + index) + terminal);
 		});
 	}
 	else
-		options.createAutoClosingAlert("Sorry, can't find generator pattern( ....com?id=*number*).");
+		options.createAutoClosingAlert("Sorry, can't find generator pattern. URL should end with a number.");
 }
