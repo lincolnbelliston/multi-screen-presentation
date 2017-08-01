@@ -452,7 +452,6 @@ options.save = function () {
 			// to save, the entire object must be retrieved, the individual profile altered,
 			// and then the whole object saved again
 			chrome.storage.sync.get('settings', function (obj) {
-				console.log(options.activeProfileName);
 				if(options.activeProfileName != '')
 					delete obj.settings[options.activeProfileName];
 
