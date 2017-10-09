@@ -15,9 +15,13 @@
 
 <body>
 <div class='container'>
+	<div id='alert-box' class="alert alert-info" role="alert" style="display:none;">
+		Info message here
+	</div>
 	<div id='main-menu'>
 		<div class='row'>
-			<div class='col-xs-12'>
+
+			<div id='edit-panel-container' class='col-xs-12'>
 				<div id='edit-panel' class='panel panel-default'>
 					<div class='panel-heading'>Edit profile</div>
 					<div class='panel-body'>
@@ -27,9 +31,24 @@
 			</div>
 		</div>
 		<div class='row'>
-			<div class='col-xs-12'>
-				<button id='shortcut-button' class='btn btn-default pull-left'>Shortcuts</button>
-				<button id='new' class='btn btn-default pull-right'>New profile</button>
+			<div class='col-xs-12 btn-toolbar'>
+				<button id='shortcut-button' class='btn btn-default'>Shortcuts</button>
+				<button id='new' class='btn btn-default'>New profile</button>
+				<div class="btn-group pull-right">
+					<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	    			Advanced <span class="caret"></span>
+	  			</button>
+				  <ul class="dropdown-menu">
+				    <li><a href="#" id='import-button'><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Import Profiles</a></li>
+						<li><a href="#" id='export-button'><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Export Profiles</a></li>
+						<li><a href="#" id='trash-button'><span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete All Profiles</a></li>
+
+						<input type="file" id="filePicker" class="custom-file-input" style="display:none; " accept=".settings" >
+
+						<!-- <li role="separator" class="divider"></li>
+				    <li><a href="#">Future Action</a></li> -->
+				  </ul>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -95,7 +114,18 @@
 				<div id='url-panel' class='panel panel-default'>
 					<div class='panel-heading'>URLs</div>
 					<div class='panel-body'>
-						<form id='urls'><div id="a0" class='url'><input type="url" class='form-control'></br></div></form>
+						<form id='urls'>
+							<div id="a0" class='url'>
+								<div class="input-group">
+						      		<input id ='urlInput' type="url" class="form-control" placeholder="Screen 1 URL">
+									<div class="input-group-btn">
+										<button id='autofillBtn' class="btn btn-default" type="button">
+											Auto Increment<sup><a title="Increments the number at the end of the URL">?</a></sup>
+										</button>
+									</div>
+						    	</div>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>

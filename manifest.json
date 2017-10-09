@@ -1,6 +1,6 @@
 {
 	"name": "Multi-Screen Presentation",
-	"version": "3.2",
+	"version": "4.0",
 	"manifest_version": 2,
 	"description": "Open a full screen presentation in multiple monitors.",
 	"browser_action": {
@@ -16,7 +16,8 @@
 	"permissions": [
 		"tabs",
 		"storage",
-		"<all_urls>"
+		"<all_urls>",
+		"downloads"
 	],
 	"icons":{
 		"48":"icons/icon.48.png",

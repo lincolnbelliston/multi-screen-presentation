@@ -20,6 +20,10 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			background.launch(JSON.parse(message.profileData));
 			break
 
+		case("init"):
+			background.getIDs();
+			break
+
 		default:
 			background.accessProfileToLaunch(msg);
 	}
@@ -35,7 +39,7 @@ background.accessProfileToLaunch = function(profileName) {
 }
 
 background.launch = function(profileData){
-	background.getIDs();
+
 	profileName = profileData.n
 	var w = screen.width;
 	var h = screen.height;
@@ -45,8 +49,8 @@ background.launch = function(profileData){
 	var windowsOpened = 0;
 
 	$(profileData.l).each(function(index,value){
-		url_string = profileData.u[index];
-		if(url_string == '') {
+		var url_string = profileData.u[index];
+		if(url_string == '' || url_string == undefined) {
 			url_string = 'chrome://newtab';
 		} else if(!(/http/).test(url_string)){
 			url_string = 'https://' + url_string;
@@ -71,10 +75,13 @@ background.launch = function(profileData){
 					background.storeIDs(background.ids, profileData.m);
 				}
 
+				//Close a blank window to keep screen clear
+				if(url_string == 'chrome://newtab')
+				{
+					chrome.windows.remove(newWindow.id);
+				}
 			}
 		)
-
-
 	});
 }
 
@@ -94,7 +101,6 @@ background.getIDs = function(){
 			background.lastLaunchArray = [];
 		}
 	})
-
 }
 
 // as windows are opened, save window ids to an array
@@ -112,7 +118,6 @@ background.closeAll = function(){
 	chrome.storage.sync.get('kill',function(obj){
 		background.ids = obj.kill;
 		background.kill();
-
 		})
 	};
 
@@ -123,42 +128,33 @@ background.closeLast = function(){
 		chrome.storage.sync.get('lastLaunch',function(obj){
 			background.lastLaunchArray = obj.lastLaunch;
 			background.killLast();
-
 		})
-
-
 	});
 }
 
 // iterate through window ids and close each one
 background.kill = function(){
 	$.each(background.ids, function(index,value){
-		try {
-			chrome.windows.remove(value);
-		}
-		catch(err){
-			console.log('Window with id '+value+' already closed.')
-		}
+		chrome.windows.remove(value, function () {
+			if(chrome.runtime.lastError)
+				console.warn("Warning, but that's ok:", chrome.runtime.lastError);
+		});
 	});
 
 	background.ids = [];
 	background.lastLaunchArray = [];
 	background.storeIDs(background.ids, background.lastLaunchArray);
-
 }
 
 background.killLast = function(){
 	var k = background.lastLaunchArray.pop();
 	var n = background.ids.length;
 
-
 	for (var i = n-1; i >= n-k; i--){
-		try{
-			chrome.windows.remove(background.ids[i])
-		}
-		catch(err){
-			console.log('Window with id '+background.ids[i]+' already closed.')
-		}
+			chrome.windows.remove(background.ids[i], function () {
+				if(chrome.runtime.lastError)
+					console.warn("Warning, but that's ok:", chrome.runtime.lastError);
+			});
 
 		background.ids.pop();
 
@@ -166,6 +162,4 @@ background.killLast = function(){
 			background.storeIDs(background.ids, background.lastLaunchArray);
 		}
 	}
-
-
 }

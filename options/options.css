@@ -11,15 +11,30 @@
 	margin-bottom: 15px;
 }
 
+.input-group{
+	z-index: 0;
+}
+
 .shortcut-row{
+}
+
+#edit-panel-container{
+	padding-left: 40px;
+	padding-right: 40px;
+	margin-bottom: 20px;
 }
 
 #edit-panel{
 	margin-top: 15px;
 }
 
-#new {
-	margin-bottom: 15px;
+#main-menu {
+	margin-bottom: 95px;
+	margin-top: 50px;
+}
+
+#trash-button{
+	color: red;
 }
 
 .left{
@@ -30,7 +45,6 @@
 .right{
 	padding-left: 0px;
 }
-
 
 #ctl-panel{
 	margin-top: 15px;

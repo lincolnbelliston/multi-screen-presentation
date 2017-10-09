@@ -20,8 +20,11 @@ $(document).ready(function(){
 		content.shortcuts = obj.shortcuts;
 	})
 
+	//logging the complete storage for debug purposes
+	chrome.storage.sync.get(null, function(obj){
+		//console.log(obj);
+	})
 });
-
 
 var content = {};
 
@@ -32,13 +35,11 @@ content.handleKeyDown = function(e) {
 		code = code - 48;
 	}
 	var key = content.keycodes[code];
-	if(!key.pressed){
+	if(key != undefined && !key.pressed){
 		key.pressed = true;
 
 		content.checkShortcuts();
-
 	};
-
 }
 
 content.handleKeyUp = function(e) {
@@ -48,11 +49,13 @@ content.handleKeyUp = function(e) {
 		code = code - 48;
 	}
 	var key = content.keycodes[code];
-	key.pressed = false;
+	if(key != undefined)
+		key.pressed = false;
 }
 
 content.checkShortcuts = function() {
 	for (var key in content.shortcuts){
+		//console.log(content.shortcuts);
 		shortcut = content.shortcuts[key];
 
 		if(content.checkShortcutCondition(shortcut)){
@@ -72,7 +75,6 @@ content.checkShortcutCondition = function(shortcut) {
 			return conditionMet;
 		}
 	}
-
 	return conditionMet;
 }
 
